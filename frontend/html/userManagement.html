@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Management</title>
+  <link rel="stylesheet" href="userManagement.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>User Management</h1>
+      <button class="btn btn-secondary" id="genSimBtn">Generate Simulation</button>
+    </div>
+
+    <p class="subtitle">Manage users by promote to admin, unpromote, or ban access.</p>
+    <div class="search-container">
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Search users by name or email..."
+        />
+        <div class="sort-container">
+          <button class="sort-btn" id="sortBtn">
+            Sort By <span class="dropdown-arrow"></span>
+          </button>
+          <ul class="sort-dropdown" id="sortDropdown">
+            <li data-sort="name-asc">Name (A-Z)</li>
+            <li data-sort="name-desc">Name (Z-A)</li>
+            <li data-sort="role-admin">Admins First</li>
+            <li data-sort="role-user">Users First</li>
+          </ul>
+          
+        </div>
+    </div>
+      
+    <div class="user-list">
+      <!-- Sample user item -->
+      <div class="user-item">
+        <div class="user-info">
+          <h3 class="username"></h3>
+          <p class="email"></p>
+        </div>
+        <div class="user-actions">
+          <p class="number_of_simulations"></p>
+          <button class="btn promote-btn">Promote</button>
+          <button class="btn ban-btn">Ban</button>
+        </div>
+      </div>
+      <!-- Repeat more users here dynamically -->
+    </div>
+  </div>
+
+  <!-- Ban Confirmation Modal -->
+  <div id="banModal" class="modal">
+    <div class="modal-content">
+      <p>Are you sure you want to ban this user?</p>
+      <h3 id="banUsername"></h3>
+      <div class="modal-buttons">
+        <button id="confirmBanBtn">Confirm</button>
+        <button id="cancelBanBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="confirmModal" class="modal">
+    <div class="modal-content">
+      <p id="confirmMessage">Are you sure?</p>
+      <div class="modal-buttons">
+        <button id="confirmActionBtn">Confirm</button>
+        <button id="cancelActionBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+  
+
+  <script src="userManagement.js"></script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Simulation</title>
+	<link rel="stylesheet" type="text/css" href="../css/simulationPlaying.css">
+    <link rel="stylesheet" type="text/css" href="../css/levelSelectorStyle.css"/>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.32/esri/themes/light/main.css" />
+</head>
+<body>
+
+    <div id="map">
+
+        <div class="controlPanels-1">
+            <h2>Simulation Information</h2>
+            <div class="info-container">
+                <h3 id="simulationNameText">Simulation Name : </h3>
+                <h3 id="durationText">Duration</h3>
+                <h3 id="evacueesText">Evacuees escaped</h3>
+            </div>
+        </div>
+
+        <div class="controlPanels-2">
+            <h2>Simulation Control</h2>
+        
+            
+            <div class="time-container">
+                <div style="flex: 1;"></div>
+                <h3 id="timeText"></h3>
+              </div>
+            <div class="progress-container" id="progressContainer">
+                
+                <div class="progress-bar" id="progressBar"></div>
+              </div>
+              
+        
+            
+            <!-- Buttons -->
+            <div class="button-group">
+                <!-- <button class="control-btn" id="pauseBtn">&#9208;</button> -->
+                <div></div>
+                <button class="control-btn" id="resumeBtn">&#9654;</button>
+                <button class="control-btn" id="stopBtn">&#9209;</button>
+            </div>
+        </div>
+
+        <div id="buildingLevel">
+            <label for="levelSelect">Filter Building Levels : </label>
+            <select id="levelSelect">
+                <option value="1=1">All</option>
+                <option value="FLOOR = '1'">Level 1</option>
+                <option value="FLOOR = '2'">Level 2</option>
+                <option value="FLOOR = '3'">Level 3</option>
+            </select>
+        </div>
+    </div>
+	
+    
+      
+      
+    
+</body>
+<script src="https://js.arcgis.com/4.32/"></script>
+
+<!-- Your custom map logic -->
+<script src="../ui/simulationPlaying.js" type="module"></script>
+<script src="../map/mapSetup.js" type="module"></script>
+<script src="../map/mapSimulationPlaying.js" type="module"></script>
+<script src="../map/mapLevelSelector.js" type="module"></script>
+</html>

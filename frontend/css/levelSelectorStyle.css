@@ -1,0 +1,31 @@
+  
+#buildingLevel {
+    position: absolute;
+    bottom: 5vh;
+    left: 2vw;
+    background-color: #444;
+    border-radius: 8px;
+    padding: 16px;
+    /* width: 20vw; */
+    height: auto;
+    z-index: 9999;
+    
+    /* min-width: ; */
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  #levelSelect {
+    background-color: #2F4F4F;
+    color: white;
+    /* border: 2px solid #00CED1; brighter border for visibility */
+    border-radius: 6px;
+    font-size: 1rem; /* bigger text */
+    padding: 8px 16px; /* bigger click area */
+    cursor: pointer; /* shows hand cursor */
+    /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); */
+    /* transition: all 0.2s ease; smooth hover animation */
+  }
+  
+ 

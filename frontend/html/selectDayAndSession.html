@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Select Day and Session</title>
+  <link rel="stylesheet" type="text/css" href="../css/selectDayAndSession.css"/>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Select Day and Session</h1>
+      <!-- <div class="header-buttons">
+        <button class="btn btn-primary">Generate Simulation</button>
+        <button class="btn btn-secondary">Log Out</button>
+      </div> -->
+    </div>
+
+    <p class="subtitle">
+      Select Multiple days and sessions to generate simulations
+    </p>
+
+    
+    
+
+    <!-- Simulation List -->
+    <div class="simulation-list" >
+        <div class="date-group">
+            <div class="date-header">Select Days</div>
+            <div class="simulation-item days">
+                <button class="selectBtn">Monday</button>
+                <button class="selectBtn">Tuesday</button>
+                <button class="selectBtn">Wednesday</button>
+                <button class="selectBtn">Thursday</button>
+                <button class="selectBtn">Friday</button>
+            </div>
+        </div>
+    
+        <div class="date-group">
+            <div class="date-header">Select Sessions</div>
+            <div class="simulation-item sessions">
+                <button class="selectBtn">8:00 AM</button>
+                <button class="selectBtn">9:00 AM</button>
+                <button class="selectBtn">10:00 AM</button>
+                <button class="selectBtn">11:00 AM</button>
+                <button class="selectBtn">12:00 PM</button>
+                <button class="selectBtn">1:00 PM</button>
+                <button class="selectBtn">2:00 PM</button>
+                <button class="selectBtn">3:00 PM</button>
+                <button class="selectBtn">4:00 PM</button>
+                <button class="selectBtn">5:00 PM</button>
+            </div>
+        </div>
+    </div>
+    
+    
+
+    <div class="button-container">
+        <div></div>
+        <div class="sim-actions">
+            <div class="simulations-selected" id="simCount">0 Simulations Selected</div>
+            <button class="generateSimBtn" id="generateSimBtn">Select Simulation</button>
+        </div>
+    </div>
+    
+
+  <script src="../ui/selectDayAndSession.js"></script>
+</body>
+</html>

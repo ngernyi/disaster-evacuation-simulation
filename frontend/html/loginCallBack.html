@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+  <head><title>Logging In...</title></head>
+  <body>
+    <script>
+      // Automatically call backend to complete login
+      fetch('http://127.0.0.1:5000/login/callback', { credentials: 'include' })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            window.location.href = 'http://127.0.0.1:5501/Code/frontend/map/landingPage.html';
+          } else {
+            alert('Login failed.');
+          }
+        });
+    </script>
+  </body>
+</html>

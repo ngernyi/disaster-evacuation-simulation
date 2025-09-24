@@ -1,0 +1,72 @@
+
+html, body {
+    height: 100%;
+    margin: 0;
+  }
+
+#map{
+    width: 65%;
+    height: 100%;
+    float: left;
+}
+
+.container{
+    width: 35%;
+    height: 100vh; /* Full viewport height */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Vertical centering */
+    align-items: center;     /* Horizontal centering */
+    background-color: #797979;
+    color: white;
+}
+
+.signup-container{
+    padding: 15%;
+    margin: 5%;
+    background-color: #595959;
+    border-radius: 12%;
+}
+
+.signInButton {
+    align-items: center;
+    text-align: center;
+    display: flex;
+    flex-direction: row;
+    margin-top: 10px;
+    padding: 10px 10px;
+    color: white;
+    border: 3px solid #6C6C6C;
+    border-radius: 4%;
+    cursor: pointer;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #404040;
+  }
+
+.signInButton #googleSignInButton {
+    align-items: center;
+    text-align: center;
+    margin-top: 5vh;
+    padding: 10px 20px;    
+    color: white;
+    border: 3px solid #6C6C6C ;
+    border-radius: 4%;
+    cursor: pointer;
+  }
+
+  .signInButton #microsoftSignInButton {
+    margin-top: 5vh;
+    text-align: center;
+    padding: 10px 20px;    
+    color: white;
+    border: 3px solid #6C6C6C ;
+    border-radius: 4%;
+    cursor: pointer;
+  }

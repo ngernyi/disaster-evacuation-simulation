@@ -1,0 +1,143 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #646464;
+    color: white;
+    padding: 20px;
+}
+
+.container {
+    max-width: 80vw;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.subtitle {
+    color: #b0b0b0;
+    margin-bottom: 30px;
+    font-size: 16px;
+}
+
+.selectBtn {
+    background-color: #747474;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 18px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin: 5px;
+    transition: background-color 0.2s ease;
+}
+.selectBtn.selected {
+    background-color: #2F4F4F; /* green when selected */
+    color: white;
+}
+
+/* .selectBtn:hover {
+    background-color: #888;
+} */
+
+.simulation-list {
+    background-color: #515252;
+    border-radius: 12px;
+    padding: 20px;
+    color: white;
+}
+
+.date-header {
+    width: 95%;
+    padding: 10px 0;
+    margin: 10px auto;
+    border-bottom: 1px solid #FFF;
+    color: #b0b0b0;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.simulation-item {
+    width: 95%;
+    margin: 15px auto;
+    padding: 10px;
+    /* background-color: #595959; */
+    border-radius: 12px;
+    display: flex;
+    flex-wrap: wrap;  /* allows buttons to wrap */
+    gap: 10px;
+}
+
+/* Days row (Mon–Fri aligned horizontally) */
+.simulation-item.days {
+    justify-content: flex-start; /* evenly spread out */
+}
+
+/* Sessions row (max 5 per row) */
+.simulation-item.sessions {
+    justify-content: flex-start;
+}
+
+.simulation-item .selectBtn {
+    flex: 1 1 calc(20% - 25px); /* 5 buttons per row */
+    text-align: center;
+}
+
+
+.button-container {
+    display: flex;
+    justify-content: flex-end; /* push everything to the right */
+    width: 100%;               /* take full width */
+    margin-top: 10px;
+}
+
+.generateSimBtn {
+    background-color: #2F4F4F;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.button-container {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    margin-top: 20px;
+    padding-right: 20px;
+}
+
+.sim-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 16px;
+}
+
+.simulations-selected {
+    color: white;
+    /* font-size: 14px; */
+    text-align: right;
+}
+
+
+
+

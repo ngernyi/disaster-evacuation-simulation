@@ -1,0 +1,351 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden; /* No scrollbars */
+}
+
+#map {
+  position: relative; /* so children with position:absolute are relative to this */
+  width: 100%;
+  height: 100%;
+}
+  .greenBtn {
+    /* position: absolute; */
+    /* left: 5vw; */
+    /* top: 2vh; */
+    height: 6vh;
+    padding: 0 2vw;
+    border-radius: 9999px;
+    background-color: #2F4F4F;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    transition: background-color 0.3s ease;
+  }
+
+  .grey-text{
+    color: #444;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .left-btn-container {
+    display: flex;
+    justify-content: start; /* spread items: left, center, right */
+    align-items: center; /* vertically center */
+    width: 100%; /* or any specific width you want */
+    position: absolute;
+    gap: 2vw;
+    top: 2vh;
+    left: 5vw;
+    /* right: 2vw; */
+    /* padding:0 2vw; optional padding on left & right */
+}
+
+.left-section,
+.center-section,
+.right-section {
+    display: flex;
+    align-items: center;
+    gap: 1vw; /* spacing between items inside each section */
+}
+
+
+  /* #usernameText{
+    position: absolute;
+    left: 50vw;
+    top: 2vh;
+  } */
+
+  /* #userManagementText{
+    position: absolute;
+    left: 10vw;
+    top: 2vh;
+  } */
+  
+  .greenBtn:hover {
+    background-color: #1e2e2e;
+  }
+  
+  .controlPanels-1, .controlPanels-2 {
+    position: absolute;
+    right: 2vw;
+    width: 22vw;
+    padding: 3vh 2vw;                
+    background-color: #444;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3vh;                        
+    color: white;
+  }
+  
+  
+  .controlPanels-1 {
+    top: 3vh;
+  }
+  
+  .controlPanels-2 {
+    top: 45vh;
+  }
+  
+  h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: white;
+  }
+  
+  .generateSimButton, .selectButton {
+    width: 100%;
+    height: 6vh;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    color: white;
+  }
+  
+  .generateSimButton {
+    background-color: #2F4F4F;
+  }
+  
+  .generateSimButton:hover {
+    background-color: #1e2e2e;
+  }
+  
+  .selectButton {
+    background-color: #666;
+  }
+  
+  .selectButton:hover {
+    background-color: #555;
+  }
+  
+  .textInput {
+    width: 90%;
+    height: 6vh;
+    padding: 0 1vw;
+    background-color: #e0e0e0;
+    color: #333;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 400;
+  }
+  
+  .info-container {
+    position: absolute;
+    top: 3vh;
+    right: 30vw;
+  }
+  
+  .info-icon {
+    width: 30px;
+    height: 30px;
+    background-color: #2F4F4F;
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 24px;
+    font-weight: bold;
+    font-family: Arial, sans-serif;
+    cursor: pointer;
+    font-size: 1em;
+  }
+  
+  .tooltip-text {
+    visibility: hidden;
+    background-color: #333;
+    color: #fff;
+    text-align: left;
+    padding: 8px;
+    border-radius: 4px;
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    white-space: nowrap;
+    font-size: 0.9em;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  .info-container:hover .tooltip-text {
+    visibility: visible;
+  }
+  .addMenu {
+    position: absolute;
+    top: 5vh;
+    right: 2vw;
+    background-color: #444;
+    border-radius: 8px;
+    padding: 16px;
+    width: 30vw;
+    height: auto;
+    z-index: 9999;
+    display: none;
+    min-width: 220px;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .addMenu label {
+    color: white;
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  
+  .addMenu input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    margin-bottom: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+  }
+  
+  /* Buttons */
+  .addMenu button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 8px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  #addEvacueeBtn {
+    background-color: #0078d7;
+  }
+  #addEvacueeBtn:hover {
+    background-color: #005a9e;
+  }
+  
+  #addFireBtn {
+    z-index: 9999;
+    background-color: #d72638;
+  }
+  #addFireBtn:hover {
+    background-color: #a71d2a;
+  }
+  
+  #addCollapseBtn {
+    background-color: #f4a261;
+  }
+  #addCollapseBtn:hover {
+    background-color: #e07b28;
+  }
+  
+  .addMenu hr {
+    margin: 12px 0;
+    border: none;
+    border-top: 1px solid #ddd;
+  }
+  
+ 
+/* Close Button - positioned at upper right corner */
+.addMenu .closeBtn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  font-weight: bold;
+  color: #ccc;
+  cursor: pointer;
+  width: auto ;
+  margin-top: 0 ;
+  padding: 4px 8px;
+}
+.closeBtn:hover {
+  color: #fff;
+}
+  .closeBtn:hover {
+    color: #fff;
+  }
+  
+#buildingLevel {
+    position: absolute;
+    bottom: 5vh;
+    left: 2vw;
+    background-color: #444;
+    border-radius: 8px;
+    padding: 16px;
+    /* width: 20vw; */
+    height: auto;
+    z-index: 9999;
+    
+    /* min-width: ; */
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  #levelSelect {
+    background-color: #2F4F4F;
+    color: white;
+    /* border: 2px solid #00CED1; brighter border for visibility */
+    border-radius: 6px;
+    font-size: 1rem; /* bigger text */
+    padding: 8px 16px; /* bigger click area */
+    cursor: pointer; /* shows hand cursor */
+    /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); */
+    /* transition: all 0.2s ease; smooth hover animation */
+  }
+  
+ 
+  .loading-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.5); /* semi-transparent black */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 9999;
+    display: none; /* hidden by default */
+    color: white;
+    font-size: 18px;
+    font-family: Arial, sans-serif;
+  }
+
+  .loading-container{
+    width: 20vw;
+    height: 20vh;
+    background-color: white;
+    border-radius: 10px;
+  }
+  
+  /* Round spinner */
+  .loading-spinner {
+    border: 6px solid rgba(255,255,255,0.3);
+    border-top: 6px solid white;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }

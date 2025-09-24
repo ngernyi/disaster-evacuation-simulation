@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Simulation History</title>
+  <link rel="stylesheet" type="text/css" href="../css/simulationHis.css"/>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Simulation History</h1>
+      <div class="header-buttons">
+        <button class="btn btn-primary">Generate Simulation</button>
+        <button class="btn btn-secondary">Log Out</button>
+      </div>
+    </div>
+
+    <p class="subtitle">
+      Click the simulations below to view their evaluation. 
+    </p>
+
+    <div class="controls">
+      <div class="search-container">
+        <input type="text" class="search-input" placeholder="Search the simulation by name, date or duration" />
+      </div>
+      <div class="sort-container">
+        <button class="sort-btn" id="sortBtn">
+          Sort By: Date <span class="dropdown-arrow"></span>
+        </button>
+        <ul class="sort-dropdown" id="sortDropdown">
+          <li data-sort="date">Date</li>
+          <li data-sort="name">Name</li>
+          <li data-sort="duration">Duration</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div id="deleteModal" class="modal">
+      <div class="modal-content">
+        <p>Do you want to delete this simulation?</p>
+        <h3 id="deleteSimulationName"></h3>
+        <div class="modal-buttons">
+          <button id="confirmDeleteBtn">Confirm</button>
+          <button id="cancelDeleteBtn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rename Modal -->
+    <div id="renameModal" class="modal">
+      <div class="modal-content">
+        <p>Enter new name</p>
+        <input type="text" id="renameInput" placeholder="New Name" />
+        <div class="modal-buttons">
+          <button id="confirmRenameBtn">Confirm</button>
+          <button id="cancelRenameBtn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Evaluation Board Modal -->
+    <div id="evaluationBoard" >
+        <div class="board-content">
+            <div class="board-header">
+                <h3 id="evaluationSimulationName">Name</h3>
+                <button id="closeEvaluationBtn">X</button>
+            </div>
+            <div class="evaluation-details">
+                <div class="evaluation-item">
+                    <div class="evaluation-label" id="evaluationDuration">Duration</div>
+                    <div class="evaluation-value" id="evaluationDurationValue">3m 30s</div>
+                </div>
+                <div class="evaluation-item">
+                    <div class="evaluation-label" id="evaluationEvacuees">Number of Evacuees</div>
+                    <div class="evaluation-value" id="evaluationEvacueesValue">85%</div>
+                </div>
+                <div class="evaluation-item">
+                    <div class="evaluation-label" id="evaluationHazards">Number of Hazards</div>
+                    <div class="evaluation-value" id="evaluationHazardsValue">85%</div>
+                </div>
+                <div class="evaluation-item">
+                    <div class="evaluation-label" id="evaluationComputationalTime">Computational Time</div>
+                    <div class="evaluation-value" id="evaluationComputationalTimeValue">85%</div>
+                </div>
+            </div>
+    
+            <!-- 📦 Export Buttons -->
+            <div class="modal-buttons export-buttons">
+                <button id="exportPdfBtn">Export as PDF</button>
+                <button id="exportCsvBtn">Export as CSV</button>
+            </div>
+        </div>
+    </div>
+    
+
+    <!-- Simulation List -->
+    <div class="simulation-list" display="none">
+      <div class="date-group">
+        <div class="date-header"></div>
+        <div class="simulation-item">
+          <div class="simulation-info">
+            <div class="simulation-title"></div>
+            <div class="duration"></div>
+          </div>
+          <div class="simulation-actions">
+            <button class="replay-btn">
+              <span class="play-icon"></span>
+              Replay
+            </button>
+            <div class="menu-container">
+              <button class="menu-btn">⋮</button>
+              <div class="menu-options">
+                <div class="menu-option rename">Rename</div>
+                <div class="menu-option delete">Delete</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../ui/simulationHistoryScript.js"></script>
+</body>
+</html>

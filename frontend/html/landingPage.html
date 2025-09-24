@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Homepage</title>
+	<link rel="stylesheet" type="text/css" href="../css/mapStyle.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/4.32/esri/themes/light/main.css" />
+</head>
+<body>
+
+    <div id="map">
+
+    
+
+    
+        <div class="left-btn-container">
+            <div class="left-section">
+                <!-- Only one of these will be shown via JS -->
+                <button class="greenBtn" id="signInButton" style="display: none;">Sign In</button>
+                <button class="greenBtn" id="historyButton" style="display: none;">History</button>
+            </div>
+            <div class="center-section">
+                <h3 class="grey-text" id="usernameText" style="display: none;">Username</h3>
+            </div>
+            <div class="right-section">
+                <h3 class="grey-text" id="userManagementText" style="display: none;">USER MANAGEMENT</h3>
+            </div>
+        </div>
+        
+        
+        <div class="info-container">
+            <div class="info-icon">i</div>
+            <div class="tooltip-text">Right click on the building to add a hazard or evacuee.</div>
+        </div>
+
+        <div class="controlPanels-1">
+            <h2>Simulation By Session</h2>
+            <button class="selectButton" id="sessionSelectButton">
+                Select Session
+            </button>
+            <input type="text" class="textInput" id="sessionNameInput" placeholder="Enter simulation name" >
+
+            <button class="generateSimButton" id="sessionSimButton">
+                Generate Simulation
+            </button>
+            
+        </div>
+        
+        <div class="controlPanels-2" id="customSimPanel">
+            <h2>Custom Simulation</h2>
+            
+            <input type="text" class="textInput" id="customNameInput" placeholder="Enter simulation name">
+            
+            <button class="generateSimButton" id="customSimButton">
+                Generate Simulation
+            </button>
+        </div>
+
+        <div class="addMenu" id="addMenuu" >
+            <button class="closeBtn" id="closeMenuBtn">&times;</button>
+            <label for="evacueeCount">Select number of evacuees (Max 10):</label>
+            <input list="evacueeOptions" type="number" id="evacueeCountInput" placeholder="Select or enter number" min="1" max="10" />
+            <!-- <datalist id="evacueeOptions">
+                <option value="1"></option>
+                <option value="5"></option>
+                <option value="10"></option>
+                <option value="20"></option>
+            </datalist> -->
+        
+            <button id="addEvacueeBtn">Add Evacuee(s)</button>
+            <hr />
+            <button id="addFireBtn">Add Fire</button>
+            <button id="addCollapseBtn">Add Building Collapse</button>
+        </div>
+
+        <!-- filter building levels -->
+        <div id="buildingLevel">
+            <label for="levelSelect">Filter Building Levels : </label>
+            <select id="levelSelect">
+                <option value="1=1">All</option>
+                <option value="FLOOR = '1'">Level 1</option>
+                <option value="FLOOR = '2'">Level 2</option>
+                <option value="FLOOR = '3'">Level 3</option>
+            </select>
+        </div>
+
+        <div id="loadingModal" class="loading-modal">
+            <div >
+                <div class="loading-spinner"></div>
+                <p>Generating...</p>
+            </div>
+            
+        </div>
+
+        
+      
+      
+    </div>
+    
+</body>
+<script src="https://js.arcgis.com/4.32/"></script>
+
+<!-- Your custom map logic -->
+<script type="module" src="../ui/landingPageScript.js"></script>
+<script type="module" src="../map/mapSetup.js"></script>
+<script type="module" src="../map/mapInteraction.js"></script>
+<script type="module" src="../map/mapGraphics.js"></script>
+
+<script type="module" src="../map/mapLevelSelector.js"></script>
+</html>

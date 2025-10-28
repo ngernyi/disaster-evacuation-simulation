@@ -15,8 +15,8 @@ let currentStep = 0;
 export function playSimulation(evacueeGraphic, evacueeMovement, interval) {
 
     const flatevacueeMovement = evacueeMovement;
-    console.log("graphic length",evacueeGraphic.length);
-    console.log("flat",flatevacueeMovement);
+    // console.log("graphic length",evacueeGraphic.length);
+    // console.log("flat",flatevacueeMovement);
 
     let maxLength = flatevacueeMovement.reduce((max, movement) => Math.max(max, movement.length), 0);
     // if currentStep is greater than the number of steps, stop the simulation
@@ -46,7 +46,7 @@ export function playSimulation(evacueeGraphic, evacueeMovement, interval) {
 
     
 
-    console.log("runSimulation ",currentStep);
+    // console.log("runSimulation ",currentStep);
 }
 
 function updateEvacueesAtStep(step, evacueeGraphic, evacueeMovement) {

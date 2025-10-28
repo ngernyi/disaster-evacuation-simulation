@@ -230,6 +230,9 @@ export function setReplayButton(){
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+    const loadingElement = document.getElementById("loadingModal"); 
+    // hide the loading element
+    loadingElement.style.display = "flex";
     const params = new URLSearchParams(window.location.search);
     const simulationId = params.get("simulationId");
     console.log(simulationId);
@@ -237,10 +240,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         method: 'GET',
         credentials: 'include'
     })
-    .then(response => response.json())
+    .then(response => {
+      console.log("Status:", response.status);
+      return response.json();
+    })
     .then(data => {
 
-        console.log(data);
+        // console.log(data);
+        console.log(data.length);
+        loadingElement.style.display = "none";
 
         // render the metadata
         document.getElementById("simulationNameText").innerHTML += data.simulation_metadata.Simulation_Name;
@@ -263,10 +271,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             totalSteps = Math.max(totalSteps, routePoints.length);
         });
     
-        console.log(evacueeMovement);
+        // console.log(evacueeMovement);
 
         data.hazards.forEach(hz => {
-            console.log(hz);
+            // console.log(hz);
             const fireGraphicAdded = addFire(hz.Longitude, hz.Latitude, hz.Z);
             fireGraphic.push(fireGraphicAdded);
         });
@@ -280,5 +288,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         playSimulation(evacueesGraphic, evacueeMovement, 10);
     })
     .catch(error => console.error('Error:', error)); 
+    console.log("done")
 });
   

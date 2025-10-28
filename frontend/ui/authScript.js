@@ -89,6 +89,11 @@ document.getElementById("googleSignInButton").addEventListener("click", function
   window.location.href = "http://localhost:5000/login";
 });
 
+document.getElementById("microsoftSignInButton").addEventListener("click", function() {
+  // Redirect to Flask backend Google login route
+  window.location.href = "http://localhost:5000/login/microsoft";
+});
+
 // fetch('http://127.0.0.1:5000/login/callback', { credentials: 'include' })
 //   .then(res => res.json())
 //   .then(data => {

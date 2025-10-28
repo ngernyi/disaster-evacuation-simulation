@@ -7,7 +7,15 @@ export function addFire(lon, lat, z) {
         geometry: { type: "point", longitude: lon, latitude: lat, z, spatialReference: { wkid: 4326 } },
         symbol: {
         type: "point-3d",
-        symbolLayers: [{ type: "object", resource: { primitive: "sphere" }, material: { color: "red" }, height: 3, width: 3, depth: 3, anchor: "center" }]
+        symbolLayers: [
+          { 
+            type: "object", 
+            resource: { href: "../assets/models/flame__test.glb" }, 
+            material: { color: "red" }, 
+            height: 3, 
+            width: 3, 
+            depth: 3, 
+            anchor: "bottom" }]
         }
     });
     window.mapView.graphics.add(fireGraphic);
@@ -21,7 +29,14 @@ export function addEvacuee(lon, lat, z) {
     geometry: { type: "point", longitude: lon, latitude: lat, z:z, spatialReference: { wkid: 4326 } },
     symbol: {
       type: "point-3d",
-      symbolLayers: [{ type: "object", resource: { primitive: "sphere" }, material: { color: "blue" }, height: 3, width: 1, depth: 1, anchor: "center" }]
+      symbolLayers: [{ 
+        type: "object", 
+        resource: { href: "../assets/models/basic_human_model..glb" }, 
+        material: { color: "blue" }, 
+        height: 1.5, 
+        width: 1, 
+        depth: 1, 
+        anchor: "bottom" }]
     }
   });
   window.mapView.graphics.add(evacueeGraphic);

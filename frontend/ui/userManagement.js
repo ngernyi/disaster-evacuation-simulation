@@ -5,22 +5,32 @@ let listToShow = [];
 let currentSort = 'name-asc';
 let currentKeyword = '';
 
-window.onload = function () {
-  fetch('http://localhost:5000/get_all_users', {
-    credentials: 'include',
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-    .then(response => response.json())
-    .then(users => {
-      listOfUsers = users;
+window.onload = async function () {
+  try {
+    const response = await fetch('http://localhost:5000/get_all_users', {
+      credentials: 'include',
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.success) {
+      listOfUsers = data.users; // Use the "users" field from the backend
       updateListToShow();
       renderUsers();
-    });
-  
+    } else {
+      console.error('Server returned success: false');
+    }
+  } catch (err) {
+    console.error('Failed to fetch users:', err);
+  }
 };
+
 
 // update list to show
 function updateListToShow() {
@@ -293,7 +303,7 @@ function createUserItem(user) {
 }
 
 document.getElementById('genSimBtn').addEventListener('click', function() {
-  window.location.href = 'http://localhost:5501/Code/frontend/map/landingPage.html';
+  window.location.href = 'http://localhost:5501/Code/frontend/html/landingPage.html';
 });
 
 

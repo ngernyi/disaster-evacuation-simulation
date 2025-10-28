@@ -79,88 +79,88 @@ export function showFloors(event) {
 
 // const wallsLayer = webscene.layers.find(l => l.title === "Walls");
 
-async function fetchAllWalls() {
-  let allFeatures = [];
-  let lastOID = 0;
-  const batchSize = 2000; // matches service maxRecordCount
-  const wallsLayer = webscene.layers.find(l => l.title === "Walls");
-  while (true) {
-    const query = wallsLayer.createQuery();
-    query.returnGeometry = true;
-    query.outFields = ["*"];
-    query.maxAllowableOffset = 0;
-    query.where = `BUILDINGKEY = 'Q' AND FLOOR = 3 AND OBJECTID > ${lastOID}`;
-    query.orderByFields = ["OBJECTID ASC"];
-    query.num = batchSize;
+// async function fetchAllWalls() {
+//   let allFeatures = [];
+//   let lastOID = 0;
+//   const batchSize = 2000; // matches service maxRecordCount
+//   const wallsLayer = webscene.layers.find(l => l.title === "Walls");
+//   while (true) {
+//     const query = wallsLayer.createQuery();
+//     query.returnGeometry = true;
+//     query.outFields = ["*"];
+//     query.maxAllowableOffset = 0;
+//     query.where = `BUILDINGKEY = 'Q' AND FLOOR = 3 AND OBJECTID > ${lastOID}`;
+//     query.orderByFields = ["OBJECTID ASC"];
+//     query.num = batchSize;
 
-    const result = await wallsLayer.queryFeatures(query);
+//     const result = await wallsLayer.queryFeatures(query);
 
-    if (result.features.length === 0) break;
-    allFeatures = allFeatures.concat(result.features);
+//     if (result.features.length === 0) break;
+//     allFeatures = allFeatures.concat(result.features);
 
-    // advance OID window
-    lastOID = result.features[result.features.length - 1].attributes.OBJECTID;
+//     // advance OID window
+//     lastOID = result.features[result.features.length - 1].attributes.OBJECTID;
 
-    console.log(`Fetched ${result.features.length} more features (total: ${allFeatures.length})`);
+//     console.log(`Fetched ${result.features.length} more features (total: ${allFeatures.length})`);
 
-    if (result.features.length < batchSize) {
-      // ✅ last batch, exit loop
-      break;
-    }
-  }
+//     if (result.features.length < batchSize) {
+//       // ✅ last batch, exit loop
+//       break;
+//     }
+//   }
 
-  // return allFeatures;
-  let features = allFeatures;
-  console.log(`✅ Finished. Total features exported: ${features.length}`);
+//   // return allFeatures;
+//   let features = allFeatures;
+//   console.log(`✅ Finished. Total features exported: ${features.length}`);
 
-  let output = "";
+//   let output = "";
 
-  features.forEach((feature, index) => {
-    const geom = feature.geometry;
-    output += `\nFeature ${index + 1}:\n`;
+//   features.forEach((feature, index) => {
+//     const geom = feature.geometry;
+//     output += `\nFeature ${index + 1}:\n`;
 
-    if (!geom) {
-      output += "  ⚠️ No geometry found\n";
-      return;
-    }
+//     if (!geom) {
+//       output += "  ⚠️ No geometry found\n";
+//       return;
+//     }
 
-    if (geom.rings) {
-      geom.rings.forEach((ring, rIdx) => {
-        output += `  Ring ${rIdx + 1}:\n`;
-        ring.forEach((coord) => {
-          const [x, y, z] = coord;
-          output += `    ${x}, ${y}, ${z}\n`;
-        });
-      });
-    } else if (geom.paths) {
-      geom.paths.forEach((path, pIdx) => {
-        output += `  Path ${pIdx + 1}:\n`;
-        path.forEach((coord) => {
-          const [x, y, z] = coord;
-          output += `    ${x}, ${y}, ${z}\n`;
-        });
-      });
-    } else if (geom.type === "point") {
-      const { x, y, z } = geom;
-      output += `    ${x}, ${y}, ${z}\n`;
-    }
-  });
+//     if (geom.rings) {
+//       geom.rings.forEach((ring, rIdx) => {
+//         output += `  Ring ${rIdx + 1}:\n`;
+//         ring.forEach((coord) => {
+//           const [x, y, z] = coord;
+//           output += `    ${x}, ${y}, ${z}\n`;
+//         });
+//       });
+//     } else if (geom.paths) {
+//       geom.paths.forEach((path, pIdx) => {
+//         output += `  Path ${pIdx + 1}:\n`;
+//         path.forEach((coord) => {
+//           const [x, y, z] = coord;
+//           output += `    ${x}, ${y}, ${z}\n`;
+//         });
+//       });
+//     } else if (geom.type === "point") {
+//       const { x, y, z } = geom;
+//       output += `    ${x}, ${y}, ${z}\n`;
+//     }
+//   });
 
-  // ✅ Trigger download AFTER loop is fully done
-  const blob = new Blob([output], { type: "text/plain" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "walls_floor3.txt";
-  document.body.appendChild(a); // ensure it’s in DOM
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
+//   // ✅ Trigger download AFTER loop is fully done
+//   const blob = new Blob([output], { type: "text/plain" });
+//   const url = URL.createObjectURL(blob);
+//   const a = document.createElement("a");
+//   a.href = url;
+//   a.download = "walls_floor3.txt";
+//   document.body.appendChild(a); // ensure it’s in DOM
+//   a.click();
+//   document.body.removeChild(a);
+//   URL.revokeObjectURL(url);
+// }
 
-fetchAllWalls().then((features) => {
+// fetchAllWalls().then((features) => {
   
-});
+// });
 
 
 document.getElementById('levelSelect').addEventListener('change', (event) => {

@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const count = parseInt(evacueeCountInput.value, 10) || 1;
       
         // radius around the clicked point (adjust to suit your map scale)
-        const radius = 0.00002; 
+        const radius = 0.000008; 
         addEvacuee(longitude, latitude, z);
       
           // add evacuee in the list
@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
 document.getElementById('signInButton').addEventListener('click', function() {
-   window.location.href = 'http://localhost:5501/Code/frontend/auth/login.html';
+   window.location.href = 'http://localhost:5501/Code/frontend/html/login.html';
 });
 
 document.getElementById('historyButton').addEventListener('click', function() {
@@ -140,7 +140,7 @@ document.getElementById('historyButton').addEventListener('click', function() {
 });
 
 document.getElementById('userManagementText').addEventListener('click', function() {
-  window.location.href = 'http://localhost:5501/Code/frontend/userManagement/userManagement.html';
+  window.location.href = 'http://localhost:5501/Code/frontend/html/userManagement.html';
 });
   
 document.getElementById('customSimButton').addEventListener('click', function() {

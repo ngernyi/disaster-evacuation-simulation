@@ -11,6 +11,8 @@ from utils.GridNavMeshPathFindingFunnel import navMeshPathWithFunnel
 # from utils.navMeshPolygons import rectanglePathFindings
 from utils.rvoImplement import runRVO
 from utils.hazardHandler import add_hazard_to_nav_mesh
+from utils.multiFloorRVO import runMultiFloorRVO
+from utils.mapConverter import *
 from config.db import get_connection
 from flask import send_file
 import time
@@ -59,11 +61,22 @@ def create_custom_sim_route():
     #  update the nav graph based on the hazards
     graphList = add_hazard_to_nav_mesh(hazards_list)
     
-    # pre calculate the goal points from higher levels to lower levels
-        
+    # pre calculate the path from stair to the exit
+    """
+        newly added
+    """
+    stair1 = -117.19603379555, 34.05624942388
+    stair2 = -117.195333804329, 34.055954726546
+    
+    path_from_stair1_to_exit, path_1_status = navMeshPathWithFunnel(stair1, graphList, 1, 0.05, )
+    path_from_stair2_to_exit, path_2_status = navMeshPathWithFunnel(stair2, graphList, 1, 0.05, )
+    print("first and last step of path 1", path_from_stair1_to_exit[0], path_from_stair1_to_exit[-1])
+    print("first and last step of path 2", path_from_stair2_to_exit[0], path_from_stair2_to_exit[-1])
+    print("stair 1", path_from_stair1_to_exit)
+    print("stair 2", path_from_stair2_to_exit)
     # create a list to store the routes
     routes = []
-    floorList = []
+    agent_status = []
     calculation_start = time.time()
     #  calculate the routes
     for evacuee in evacuees_with_ids:
@@ -84,8 +97,11 @@ def create_custom_sim_route():
 
         # path, distance = dijkstra(wallPoints, start, goal, step)
         # path = compute_path_in_skeleton_map(start, goal, step)
-        path = navMeshPathWithFunnel(start, graphList, floor, step, )
-        floorList.append(floor)
+        path, status = navMeshPathWithFunnel(start, graphList, floor, path_from_stair1_to_exit,  path_from_stair2_to_exit, step,)
+        # path = navMeshPathWithFunnel(start, graphList, floor, step,)
+        agent_status.append(status)
+        # for p in path:
+        #     print("path", p)
         routes.append(path)
         
         # print("path", path)
@@ -95,10 +111,22 @@ def create_custom_sim_route():
 
     # print("routes after funnel", routes)
     #  run the rvo2
-    full_routes = runRVO(routes, floorList)
+    # full_routes = runRVO(routes, floorList)
+    # full_routes = routes
+    full_routes = runMultiFloorRVO(routes, agent_status, graphList) 
     print("done rvo")
     for route in full_routes:
         print("route", len(route))
+        print("last step", route[-1])
+        
+        # print("path ", route)
+        
+    for idx, route in enumerate(full_routes):
+        if len(route) == 0:
+            print(f"⚠️ route {idx} is empty")
+        else:
+            print(f"route {idx} length = {len(route)}, last step = {route[-1]}, first step = {route[0]}")
+
     # print("full_routes", full_routes)
     
     calculation_end = time.time()
@@ -112,8 +140,11 @@ def create_custom_sim_route():
     for evacuee in evacuees_with_ids:
         evacuee_id = evacuee.get('evacuee_id')
         points = [
-            (point[0], point[1], evacuee.get('z'), point[2])  # (lon, lat, z, step_order)
-            for point in full_routes[evacuees_with_ids.index(evacuee)]
+            # (point[0], point[1], evacuee.get('z'), point[2])  # (lon, lat, z, step_order)
+            # (point[0], point[1], point[2], point[3])
+            (point[0], point[1], point[2], step_idx)
+            for step_idx, point in enumerate(full_routes[evacuees_with_ids.index(evacuee)])
+            # for point in full_routes[evacuees_with_ids.index(evacuee)]
         ]
         save_route_points_bulk(evacuee_id, points)
         print("done saving route points")

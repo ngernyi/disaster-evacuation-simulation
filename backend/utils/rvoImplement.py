@@ -240,6 +240,11 @@ def runRVO(agent_paths, floorList, time_step=0.25, neighbor_dist=30.0, max_neigh
     for i, path in enumerate(rvo_paths):
         for j, pos in enumerate(path):
             rvo_paths[i][j] = from_utm_to_wgs(pos[0], pos[1])
+
+    # # add the z and the steps to all agents
+    # for i, path in enumerate(rvo_paths):
+    #     for j, pos in enumerate(path):
+    #         rvo_paths[i][j] = (pos[0], pos[1], agent_paths[i][j][2], j)
             
     # add step to rvo paths
     for i, path in enumerate(rvo_paths):

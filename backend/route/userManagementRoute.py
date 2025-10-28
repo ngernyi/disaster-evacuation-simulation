@@ -37,7 +37,7 @@ def get_registered_users_route():
             'number_of_simulations': number_of_simulations,
         })
         
-    return users 
+    return jsonify({'success': True,'users': users})
 
 @admin_blueprint.route('/ban_user', methods = ['POST'])
 def ban_user_route():

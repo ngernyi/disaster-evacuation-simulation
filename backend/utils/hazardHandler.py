@@ -58,7 +58,7 @@ def add_hazard_to_nav_mesh(hazard_coords, impact_radius=30):
             # convert utm to grid
             x, y = from_utm_to_grid(x, y, minMaxXY)
 
-            # reverse (since you stored as (row, col))
+            # reverse
             hazard_point = Point(y, x)
 
             # hazard area = circle around the hazard point

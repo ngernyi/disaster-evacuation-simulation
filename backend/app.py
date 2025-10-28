@@ -14,6 +14,12 @@ app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 app.config['GOOGLE_CLIENT_ID'] = os.getenv("GOOGLE_CLIENT_ID")
 app.config['GOOGLE_CLIENT_SECRET'] = os.getenv("GOOGLE_CLIENT_SECRET")
+app.config['MICROSOFT_CLIENT_ID'] = os.getenv("MICROSOFT_CLIENT_ID")
+app.config['MICROSOFT_CLIENT_SECRET'] = os.getenv("MICROSOFT_CLIENT_SECRET")
+app.config['MICROSOFT_AUTHORITY'] = os.getenv("MICROSOFT_AUTHORITY", "https://login.microsoftonline.com/common")
+app.config['MICROSOFT_REDIRECT_URI'] = os.getenv("MICROSOFT_REDIRECT_URI", "http://localhost:5000/login/microsoft/callback")
+app.config['MICROSOFT_SCOPE'] = os.getenv("MICROSOFT_SCOPE", "User.Read")
+
 
 CORS(app, 
      origins=["http://localhost:5501", "http://127.0.0.1:5501"], 

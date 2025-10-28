@@ -3,9 +3,19 @@ from flask import session
 from flask import jsonify
 from flask import request
 from services.authService import google_login, google_callback, logout
+from services.authService import microsoft_login, microsoft_callback
 from services.userManagementService import get_user_roles
 
 auth_blueprint = Blueprint('auth', __name__)
+
+
+@auth_blueprint.route('/login/microsoft')
+def login_microsoft():
+    return microsoft_login()
+
+@auth_blueprint.route('/login/microsoft/callback')
+def microsoft_authorized():
+    return microsoft_callback()
 
 @auth_blueprint.route('/login')
 def login():
@@ -24,19 +34,21 @@ def login_status():
     print("Cookies received:", request.cookies)
     
     user_info = session.get('user_info')
-   
-    if user_info:
-        user_roles = get_user_roles(user_info['id']).rstrip()
-        print(user_roles)
-        if user_roles is None:
-            return jsonify({"logged_in": False})
-            print("no login")
-            
-        else:
-            return jsonify({"logged_in": True, "user": user_info, "user_roles": user_roles})
-            print("logged")
-    else:
+    print("User info structure:", user_info)
+
+    if not user_info:
         return jsonify({"logged_in": False})
+
+    user_roles = get_user_roles(user_info['id'])
+    if not user_roles:
+        return jsonify({"logged_in": False})
+
+    return jsonify({
+        "logged_in": True,
+        "user": user_info,
+        "user_roles": user_roles.rstrip()
+    })
+
     
 @auth_blueprint.route('/logout')
 def logout_route():

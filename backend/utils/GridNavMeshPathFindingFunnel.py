@@ -124,6 +124,71 @@ def heuristic(a, b):
     """Euclidean distance heuristic."""
     return np.linalg.norm(np.array(a) - np.array(b))
 
+def a_star_with_retry(start_pt, goal_pts, points, tri, graph, centroids, filled_map, max_retries=200):
+    """
+    Try A* repeatedly by nudging the start point to neighboring centroids
+    if no path is found.
+    """
+    tried = set()
+    attempt = 0
+    current_start = start_pt
+
+    while attempt < max_retries:
+        attempt += 1
+        tri_path, path_coords = a_star_search(current_start, goal_pts, points, tri, graph, centroids, filled_map)
+        if tri_path:  # ✅ Success
+            return tri_path, path_coords
+
+        # Mark current start as tried
+        tried.add(tuple(current_start))
+
+        # Find a nearby centroid to try next
+        start_tri = int(tri.find_simplex(current_start))
+        if start_tri < 0 or start_tri not in graph:
+            # print(f"[Attempt {attempt}] Invalid start. Expanding search radius...")
+            current_start = find_nearest_walkable(current_start, points, tri, tried)
+            continue
+
+        # Choose a neighbor triangle centroid as a new start
+        neighbors = graph.get(start_tri, [])
+        if not neighbors:
+            # print(f"[Attempt {attempt}] No neighbors for {start_tri}. Expanding search radius...")
+            current_start = find_nearest_walkable(current_start, points, tri, tried)
+            continue
+
+        # Pick the closest neighbor centroid not tried yet
+        neighbor_pts = [
+            centroids[n] for n in neighbors 
+            if tuple(centroids[n]) not in tried
+        ]
+
+        if not neighbor_pts:
+            # print(f"[Attempt {attempt}] All neighbors tried. Expanding search radius...")
+            current_start = find_nearest_walkable(current_start, points, tri, tried)
+            continue
+
+        # Pick the closest neighbor to the goal
+        goal_avg = tuple(sum(x)/len(x) for x in zip(*goal_pts))
+        current_start = min(neighbor_pts, key=lambda p: heuristic(p, goal_avg))
+        # print(f"[Attempt {attempt}] Retrying from {current_start}")
+
+    raise RuntimeError("Failed to find a path after retries.")
+
+
+def find_nearest_walkable(start_pt, points, tri, tried, radius_step=0.5, max_radius=5.0):
+    """
+    Fallback search for a valid walkable point around the start point.
+    """
+    r = radius_step
+    while r <= max_radius:
+        for dx in (-r, 0, r):
+            for dy in (-r, 0, r):
+                candidate = (start_pt[0] + dx, start_pt[1] + dy)
+                if candidate not in tried and tri.find_simplex(candidate) >= 0:
+                    return candidate
+        r += radius_step
+    raise RuntimeError("Could not find a valid nearby start point.")
+
 
 def a_star_search(start_pt, goal_pts, points, tri, graph, centroids, filled_map):
     # Convert goals to triangles
@@ -165,6 +230,7 @@ def a_star_search(start_pt, goal_pts, points, tri, graph, centroids, filled_map)
                 )
                 heapq.heappush(open_set, (f_score[neighbor], neighbor))
 
+    print("No path found")
     return None, None
 
 
@@ -450,7 +516,7 @@ def expand_funnel_path(funnel_points):
 
 
 
-def navMeshPathWithFunnel(start, graphList, floor, step=0.05, ):
+def navMeshPathWithFunnel(start, graphList, floor, path_from_stair1_to_exit=None,  path_from_stair2_to_exit=None, step=0.05,):
     start_time = time.time()
     goal_main = -117.195679043251, 34.05594565305
     stair1 = -117.19603379555, 34.05624942388
@@ -458,7 +524,7 @@ def navMeshPathWithFunnel(start, graphList, floor, step=0.05, ):
     goal_lv1 = [goal_main]
     goal_lv2 = [stair1, stair2]
     goal_lv3 = [stair1, stair2]
-    
+    floor_data = [0,5.66999911144376, 10.2499997382984]
     if floor == 1:
         filled_map = NAV_DATA["filled_map_lv1"]
         minMaxXY= NAV_DATA["minMaxXY_lv1"]
@@ -499,28 +565,139 @@ def navMeshPathWithFunnel(start, graphList, floor, step=0.05, ):
         
     start = (start_grid_y, start_grid_x)
     # goal = (goal_grid_y, goal_grid_x)
-
+    print("start:", start)
+    print("goal:", goal)
     
     
     # Find path using precomputed centroids and BFS triangle finding
     path_triangles, path_coords = a_star_search(start, goalList, points, tri, graph, centroids, filled_map)
+    # print("Path triangles:", path_triangles)
+    # print("Path coords:", path_coords)
+    if not path_triangles or not path_coords:
+        
+        path_triangles, path_coords = a_star_with_retry(
+            start, goalList, points, tri, graph, centroids, filled_map
+        )
+
     funnel_coords = funnel_path_github_adapted(points, tri.simplices, path_triangles, start, path_coords[-1])
     # print("Funnel smoothed path:", funnel_coords)
-    full_path = expand_funnel_path(funnel_coords)
-    
+    # full_path = expand_funnel_path(funnel_coords)
+    full_path = funnel_coords + [funnel_coords[-1]]
+    # full_path = full_path.append(funnel_coords[-1])
     # choose 2,4,6,8, ... of the full path only
-    full_path = full_path[::15]
-    print("Full path:", len(full_path))
+    # full_path = full_path[::15]
+    # add the z to the full path
+    full_path = [(coord[0], coord[1], floor_data[floor-1]) for coord in full_path]
+    # print("full path bfr adding lower floors", full_path )
+    print("full path length bfr adding lower floors", len(full_path))
+    # path_utm = [(from_grid_to_utm(p[1], p[0], minMaxXY, step), p[2]) for p in full_path]
+    # path_wgs_only = [(from_utm_to_wgs(p[0][0], p[0][1]), p[1]) for p in path_utm]
+    # full_path = [(coord[0][0], coord[0][1], coord[1], i+1) for i, coord in enumerate(path_wgs_only)]
+    
+    """
+        newly added
+         
+        => add the path in the stair
+        => add the path from stairs to the main goal
+        => add the agent status 
+       
+    """
+    
+    # add the list of floor to the path
+    # full_path = [(coord[0], coord[1], coord[2]) for coord in full_path]
+    
+    # add the agent status (step_num, status)
+    agent_status = []
+    # add starting point
+    agent_status.append((0, floor))
+    
+    # add the path in the stairs
+    # if the agent is not at the floor 1
+    if floor != 1:
+        
+        # let the agent go downwards
+        down_path = full_path[-1]
+        
+        while down_path[2] > 0:
+            # add 1.5 or 2.5 to in the agent status to represent the stairs
+            if down_path[2] > 5:
+                # make sure only add it once
+                if agent_status[-1][1] != 2.5:
+                    agent_status.append((len(full_path), 2.5))
+                
+                down_path = (down_path[0], down_path[1], down_path[2] - 0.10)
+            else:
+                # make sure only add it once
+                if agent_status[-1][1] != 1.5:
+                    agent_status.append((len(full_path), 1.5))
+                    
+                down_path = (down_path[0], down_path[1], down_path[2] - 0.10)
+
+            if down_path[2] < 0:
+                # down_path = (down_path[0], down_path[1], floor_data[floor-2])
+                
+                # make sure it reach the ground floor                
+                down_path = (down_path[0], down_path[1], 0, 1)
+                
+                full_path.append(down_path)
+                break
+            full_path.append(down_path)
+            
+            
+        
+        print("full path length after adding stairs", len(full_path))
+        # add the path from stairs to the main goal
+        # print("oath", path_from_stair1_to_exit)
+        # find the path to be used 
+        # grid_of_stair1 = from_wgs_to_utm(path_from_stair1_to_exit[0][0], path_from_stair1_to_exit[0][1])
+        # grid_of_stair1 = from_utm_to_grid(grid_of_stair1[0], grid_of_stair1[1], NAV_DATA["minMaxXY_lv1"])
+        # print("grid of stair 1", grid_of_stair1)
+        # print(full_path[-1])
+        
+        # add the agent status to floor 1
+        agent_status.append((len(full_path), 1))
+        
+        # debug print
+        print("original path from stair ", path_from_stair1_to_exit[0][0], path_from_stair1_to_exit[0][1])
+        print("original full path ", full_path[-1][0], full_path[-1][1])
+        
+        
+        
+        if abs(path_from_stair1_to_exit[0][0] - full_path[-1][0]) < 50 and abs(path_from_stair1_to_exit[0][1] - full_path[-1][1]) < 50:
+        # if abs(grid_of_stair1[0] - full_path[-1][0]) < 10 and abs(grid_of_stair1[1] - full_path[-1][1]) < 10:
+            # add the path
+            full_path.extend(path_from_stair1_to_exit)
+            print("stair 1 is used")
+        else:
+            full_path.extend(path_from_stair2_to_exit)
+            print("stair 2 is used")
+            
+        print("full path length after adding floor 1 path to main goal", len(full_path))
+        
+        
+        
+    
+    # add the agent status for the last step (-1 means reach the goal)
+    agent_status.append((len(full_path) - 1, -1))
+    
+    
+    
+    
+    print("Full path:", (full_path))
+    print("status", agent_status)
+    print("Full path length ", len(full_path))
     end_time = time.time()
     print("Time taken: ", end_time - start_time)
     
     # plot_funnel_debug(points, tri, path_triangles, full_path, start, goal, filled_map)
     
     
-    # path_utm = [from_grid_to_utm(p[1], p[0], minMaxXY, step) for p in full_path]
-    # path_wgs_only = [from_utm_to_wgs(p[0], p[1]) for p in path_utm]
-    # path_with_steps = [(coord[0], coord[1], i+1) for i, coord in enumerate(path_wgs_only)]
+    
 
-    return full_path
+    #  show the lentgh and last path
+    # print("path_with_steps", len(full_path))
+    # print("path_with_steps", path_with_steps[-1])
+
+    return full_path, agent_status
     # return path_with_steps
     

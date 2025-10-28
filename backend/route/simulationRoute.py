@@ -157,6 +157,23 @@ def create_custom_sim_route():
     
     return jsonify(simulation_result)
 
+@sim_blueprint.route('/add_dynamic_hazards', methods = ['POST'])
+def add_dynamic_hazards_route():
+    data = request.get_json()
+    simulation_id = data.get('simulation_id')
+    dynamic_hazards = data.get('dynamic_hazards')
+    time = data.get('time')
+
+    if not simulation_id or not dynamic_hazards or not time:
+        return jsonify({'success': False,'message': 'Missing simulation ID, dynamic hazards, or time'}), 400
+
+    try:
+        add_dynamic_hazards(simulation_id, dynamic_hazards)
+        return jsonify({'success': True})
+    except Exception as e:
+        print(e)
+        return jsonify({'success': False,'message': 'Database error'}), 500
+
 @sim_blueprint.route('/get_user_simulations', methods = ['GET'])
 def get_user_simulations_route():
     # get user id

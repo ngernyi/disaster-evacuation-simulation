@@ -1,8 +1,7 @@
-import rvo2
+import pyrvo 
 from utils.mapConverter import *
 from utils.nav_loader import NAV_DATA
 import os
-import cv2
 from utils.GridNavMeshPathFindingFunnel import *
 import heapq
 
@@ -90,19 +89,19 @@ def smallAreaAStar(grid, start, goal):
     
 def runMultiFloorRVO(agent_paths, agent_status, graphList, 
            time_step=0.25, 
-           neighbor_dist=5.0,      
-           max_neighbors=10,
+           neighbor_dist=16.0,      # 5
+           max_neighbors=10,        # 10
            time_horizon=2.0, 
            time_horizon_obst=1.0,  
-           radius=5,              
-           max_speed=8,
-           goal_tolerance=10.0,      
-           target_tolerance=10.0):   
+           radius=8,              # 5
+           max_speed=8,             # 8
+           goal_tolerance=16.0,      # 8
+           target_tolerance=16.0):   # 8
 
     # Create sims
-    sim_floor1 = rvo2.PyRVOSimulator(time_step, neighbor_dist, max_neighbors, time_horizon, time_horizon_obst, radius, max_speed)
-    sim_floor2 = rvo2.PyRVOSimulator(time_step, neighbor_dist, max_neighbors, time_horizon, time_horizon_obst, radius, max_speed)
-    sim_floor3 = rvo2.PyRVOSimulator(time_step, neighbor_dist, max_neighbors, time_horizon, time_horizon_obst, radius, max_speed)
+    sim_floor1 = pyrvo.RVOSimulator(time_step, neighbor_dist, max_neighbors, time_horizon, time_horizon_obst, radius, max_speed)
+    sim_floor2 = pyrvo.RVOSimulator(time_step, neighbor_dist, max_neighbors, time_horizon, time_horizon_obst, radius, max_speed)
+    sim_floor3 = pyrvo.RVOSimulator(time_step, neighbor_dist, max_neighbors, time_horizon, time_horizon_obst, radius, max_speed)
     sims = {1: sim_floor1, 2: sim_floor2, 3: sim_floor3}
     
     # # add the walls to the simulation
@@ -193,7 +192,7 @@ def runMultiFloorRVO(agent_paths, agent_status, graphList,
         
         # add the agent into the simulation by getting the initial position of the agent
         # assign the added agent to the ids
-        agent_ids[i] = sim.addAgent((path[0][0], path[0][1]))
+        agent_ids[i] = sim.add_agent((path[0][0], path[0][1]))
         agent_sims[i] = sim
         
         # # add the goal and waypoints
@@ -258,9 +257,9 @@ def runMultiFloorRVO(agent_paths, agent_status, graphList,
                 reached_goal[i] = True
                 if agent_sims[i] is not None and agent_ids[i] is not None:
                     s = agent_sims[i]
-                    s.setAgentPrefVelocity(agent_ids[i], (0, 0))
-                    s.setAgentRadius(agent_ids[i], 0.0)
-                    s.setAgentPosition(agent_ids[i], (1e9, 1e9))
+                    s.set_agent_pref_velocity(agent_ids[i], (0, 0))
+                    s.set_agent_radius(agent_ids[i], 0.0)
+                    s.set_agent_position(agent_ids[i], (1e9, 1e9))
                     agent_sims[i] = None
                     agent_ids[i] = None
                 continue
@@ -268,9 +267,9 @@ def runMultiFloorRVO(agent_paths, agent_status, graphList,
             # check if the agent is in a stair
             if in_stair[i]:
                 # s = agent_sims[i]
-                # s.setAgentPrefVelocity(agent_ids[i], (0, 0))
-                # s.setAgentRadius(agent_ids[i], 0.0)
-                # s.setAgentPosition(agent_ids[i], (1e9, 1e9))
+                # s.set_agent_pref_velocity(agent_ids[i], (0, 0))
+                # s.set_agent_radius(agent_ids[i], 0.0)
+                # s.set_agent_position(agent_ids[i], (1e9, 1e9))
                 # agent_sims[i] = None
                 # agent_ids[i] = None
                 continue
@@ -281,7 +280,7 @@ def runMultiFloorRVO(agent_paths, agent_status, graphList,
                 continue
             
             # get the position of the agent
-            pos = simulation.getAgentPosition(agent_ids[i])
+            pos = simulation.get_agent_position(agent_ids[i])
             
             # get the target of the agent
             target = agent_paths[i][path_progress[i]]
@@ -320,8 +319,8 @@ def runMultiFloorRVO(agent_paths, agent_status, graphList,
                         
                             
             # set the velocity of the agent
-            vx = target[0] - pos[0]
-            vy = target[1] - pos[1]
+            vx = target[0] - pos.x
+            vy = target[1] - pos.y
             dist = (vx*vx + vy*vy)**0.5
 
             if dist > 0:
@@ -332,15 +331,15 @@ def runMultiFloorRVO(agent_paths, agent_status, graphList,
                 
             
 
-            simulation.setAgentPrefVelocity(agent_ids[i], vel)
+            simulation.set_agent_pref_velocity(agent_ids[i], vel)
             
         
         """
             Run Simulation
         """
-        sim_floor1.doStep()
-        sim_floor2.doStep()
-        sim_floor3.doStep()
+        sim_floor1.do_step()
+        sim_floor2.do_step()
+        sim_floor3.do_step()
             
         """
             Record the position of the agents
@@ -377,19 +376,19 @@ def runMultiFloorRVO(agent_paths, agent_status, graphList,
             
                 # get the position of the agent
                 # pos = [x,y]
-                pos = simulation.getAgentPosition(agent_ids[i])
+                pos = simulation.get_agent_position(agent_ids[i])
                 
                 # get the z coordinate of the agent
                 # pos = [x,y,z]
                 if simulation == sim_floor1:
                     # pos = [pos[0], pos[1], agent_paths[i][path_progress[i]][2]]
-                    pos_in_utm = from_grid_to_utm(pos[1], pos[0], minMax[1])
+                    pos_in_utm = from_grid_to_utm(pos.y, pos.x, minMax[1])
                 elif simulation == sim_floor2:
                     # pos = [pos[0], pos[1], agent_paths[i][path_progress[i]][2]]
-                    pos_in_utm = from_grid_to_utm(pos[1], pos[0], minMax[2])
+                    pos_in_utm = from_grid_to_utm(pos.y, pos.x, minMax[2])
                 elif simulation == sim_floor3:
                     # pos = [pos[0], pos[1], agent_paths[i][path_progress[i]][2]]
-                    pos_in_utm = from_grid_to_utm(pos[1], pos[0], minMax[3])
+                    pos_in_utm = from_grid_to_utm(pos.y, pos.x, minMax[3])
             
                 # record the position of the agent in rvo path
                 pos_in_wgs = from_utm_to_wgs(pos_in_utm[0], pos_in_utm[1])
@@ -428,8 +427,8 @@ def runMultiFloorRVO(agent_paths, agent_status, graphList,
                 # increase the path progress by 1
                 path_progress[i] += 1
             else:
-                pos = agent_sims[i].getAgentPosition(agent_ids[i])
-                distance = ((pos[0] - agent_paths[i][path_progress[i]][0])**2 + (pos[1] - agent_paths[i][path_progress[i]][1])**2)
+                pos = agent_sims[i].get_agent_position(agent_ids[i])
+                distance = ((pos.x - agent_paths[i][path_progress[i]][0])**2 + (pos.y - agent_paths[i][path_progress[i]][1])**2)
                 
                 # debug print
                 # if step_count % 100 == 0:
@@ -448,18 +447,18 @@ def runMultiFloorRVO(agent_paths, agent_status, graphList,
                     in_stair[i] = True
                     if agent_sims[i] is not None and agent_ids[i] is not None:
                         s = agent_sims[i]
-                        s.setAgentPrefVelocity(agent_ids[i], (0, 0))
-                        s.setAgentRadius(agent_ids[i], 0.0)
-                        s.setAgentPosition(agent_ids[i], (1e9, 1e9))
+                        s.set_agent_pref_velocity(agent_ids[i], (0, 0))
+                        s.set_agent_radius(agent_ids[i], 0.0)
+                        s.set_agent_position(agent_ids[i], (1e9, 1e9))
                         agent_sims[i] = None
                         agent_ids[i] = None
                 # if the agent has completed the path
                 elif get_status_by_step(i, path_progress[i]) == -1:
                     reached_goal[i] = True
                     s = agent_sims[i]
-                    s.setAgentPrefVelocity(agent_ids[i], (0, 0))
-                    s.setAgentRadius(agent_ids[i], 0.0)
-                    s.setAgentPosition(agent_ids[i], (1e9, 1e9))
+                    s.set_agent_pref_velocity(agent_ids[i], (0, 0))
+                    s.set_agent_radius(agent_ids[i], 0.0)
+                    s.set_agent_position(agent_ids[i], (1e9, 1e9))
                     agent_sims[i] = None
                     agent_ids[i] = None
                 # if the agent is reaching a floor
@@ -467,7 +466,7 @@ def runMultiFloorRVO(agent_paths, agent_status, graphList,
                     in_stair[i] = False
                     floor = get_status_by_step(i, path_progress[i])
                     sim = sims[floor]
-                    agent_ids[i] = sim.addAgent((agent_paths[i][path_progress[i]][0], agent_paths[i][path_progress[i]][1]))
+                    agent_ids[i] = sim.add_agent((agent_paths[i][path_progress[i]][0], agent_paths[i][path_progress[i]][1]))
                     agent_sims[i] = sim
                     
     print("rvo path length", len(rvo_paths))

@@ -117,8 +117,9 @@
 
 // });
 
-import { playSimulation, pauseSimulation, setCurrentStep, handleControlButton } from "../map/mapSimulationPlaying.js";
+import { playSimulation, pauseSimulation, setCurrentStep, handleControlButton, getIsPause, getCurrentStep } from "../map/mapSimulationPlaying.js";
 import { addEvacuee, addFire } from "../map/mapGraphics.js";
+import { closeMenu } from "../map/mapInteraction.js";
 
 const evacueesGraphic = [];
 const fireGraphic = [];
@@ -128,6 +129,7 @@ const progressContainer = document.getElementById("progressContainer");
 const progressBar = document.getElementById("progressBar");
 
 let isDragging = false;
+let simulationId = null;
 
 // handle click
 progressContainer.addEventListener("click", (e) => {
@@ -234,7 +236,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // hide the loading element
     loadingElement.style.display = "flex";
     const params = new URLSearchParams(window.location.search);
-    const simulationId = params.get("simulationId");
+    simulationId = params.get("simulationId");
     console.log(simulationId);
     fetch(`http://localhost:5000/get_simulation_data?simulation_id=${simulationId}`, { 
         method: 'GET',
@@ -290,4 +292,87 @@ document.addEventListener("DOMContentLoaded", async () => {
     .catch(error => console.error('Error:', error)); 
     console.log("done")
 });
+
+let pendingPoint = null;
+let isPaused = null;
+// function to handle onclick add fire
+document.getElementById('addFireBtn').addEventListener('click', () => {
+  const { longitude, latitude, z } = window.lastClickedPoint;
+  pendingPoint = { longitude, latitude, z };
+  isPaused = getIsPause();
+  // ask user for confirmation
+  document.getElementById('confirmAddingMenuId').style.display = 'block';
+  pauseSimulation();
+
+  // const confirmAddBtn = document.getElementById('confirmAddBtn');
+  // const cancelAddBtn = document.getElementById('cancelAddBtn');
+
+  // window.lastClickedPoint = null;
+  closeMenu();
+});
+
+confirmAddBtn.addEventListener('click', () => {
+  // const { longitude, latitude, z } = window.lastClickedPoint;
+  console.log(pendingPoint.longitude, pendingPoint.latitude, pendingPoint.z);
+  // addFire(pendingPoint.longitude, pendingPoint.latitude, pendingPoint.z);
+
+  let currentStep = getCurrentStep();
+
+  // console.log(currentStep);
+  // console.log(simulationId);
+
+  regenerateSimulation(currentStep, "fire", pendingPoint);
   
+  document.getElementById('confirmAddingMenuId').style.display = 'none';
+});
+
+cancelAddBtn.addEventListener('click', () => {
+  document.getElementById('confirmAddingMenuId').style.display = 'none';
+
+  // if the previous playing mode is play, resume the simulation
+  if(isPaused === false){
+    handleControlButton(evacueesGraphic, evacueeMovement, 10);
+  }
+});
+
+// function to call the backend to add the new dynamic hazard to the simulation
+function regenerateSimulation(currentStep, hazardType, hazardPosition) {
+  const loadingElement = document.getElementById("loadingModal"); 
+  // change the text to generating
+  const loadingText = loadingElement.querySelector("p");
+  loadingText.textContent = "Regenerating...";
+  // show the loading element
+  loadingElement.style.display = "flex";
+  
+  // call the backend to start the new simulation
+  fetch('http://localhost:5000/add_dynamic_hazards', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      simulationId: simulationId,
+      currentStep: currentStep,
+      hazardType: hazardType,
+      hazardPosition: hazardPosition
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log('Simulation started:', data);
+    if (data.success) {
+      // Refresh after a short delay so backend has time to update
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } else {
+      alert('Failed to regenerate simulation: ' + data.message);
+    }
+  })
+  .catch(error => {
+    console.error('Error starting simulation:', error);
+  })
+  .finally(() => {
+    loadingElement.style.display = "none";
+  });
+}

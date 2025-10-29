@@ -13,6 +13,7 @@ function waitForMapView(callback) {
     view.when(() => {
         console.log("mapView loaded");
         console.log("mapView loaded");
+        // desktop browser controls
         window.mapView.container.addEventListener("mousedown", (event) => {
             console.log("mousedown");
             
@@ -75,6 +76,43 @@ function waitForMapView(callback) {
                 }
             }
 
+        });
+
+        // mobile browser controls
+        let longPressTimer;
+        let touchStartPos;
+        let isLongPress = false;
+
+        window.mapView.container.addEventListener("touchstart", (e) => {
+          if (e.touches.length > 1) return; // ignore multi-touch
+
+          touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          isLongPress = false;
+
+          longPressTimer = setTimeout(async () => {
+            isLongPress = true;
+
+            const hit = await window.mapView.hitTest(touchStartPos);
+            if (hit.results.length > 0) {
+              window.lastClickedPoint = hit.results[0].mapPoint;
+            } else {
+              window.lastClickedPoint = window.mapView.toMap(touchStartPos);
+            }
+
+            showMenu(addMenuu, touchStartPos.x, touchStartPos.y);
+
+          }, 600); // long press duration
+        });
+
+        window.mapView.container.addEventListener("touchmove", (e) => {
+          if (isLongPress) {
+            closeMenu(); // user started dragging, close menu
+          }
+          clearTimeout(longPressTimer); // cancel long press if moving
+        });
+
+        window.mapView.container.addEventListener("touchend", (e) => {
+          clearTimeout(longPressTimer); // cancel timer on touch end
         });
     });
   });

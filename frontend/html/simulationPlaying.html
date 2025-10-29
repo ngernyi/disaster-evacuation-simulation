@@ -10,6 +10,12 @@
     
     <div id="map">
 
+        <div class="info-icon-container">
+            <div class="info-icon">i</div>
+            <div class="tooltip-text">Right click on the building to add a new hazard. 
+                <br>Long press on mobile devices to do the same.</div>
+        </div>
+
         <div class="controlPanels-1">
             <h2>Simulation Information</h2>
             <div class="info-container">
@@ -43,6 +49,26 @@
             </div>
         </div>
 
+        <div class="addMenu" id="addMenuu" >
+            <button class="closeBtn" id="closeMenuBtn">&times;</button>
+            <label for="evacueeCount">Add a new hazard</label>
+            <input type="hidden" list="evacueeOptions" type="number" id="evacueeCountInput" placeholder="Select or enter number" min="1" max="10"/>
+
+            
+            <button id="addFireBtn">Add Fire</button>
+            <button id="addCollapseBtn">Add Building Collapse</button>
+        </div>
+
+        <div class="confirmAddingMenu" id="confirmAddingMenuId">
+            <div class="confirmAddingMenu-content">
+                <p class="confirmMessage">Do you want regenerate the simulation?</p>
+                <div class="modal-buttons">
+                    <button id="cancelAddBtn">Cancel</button>
+                    <button id="confirmAddBtn">Confirm</button>
+                </div>
+            </div>
+        </div>
+
         <div id="buildingLevel">
             <label for="levelSelect">Filter Building Levels : </label>
             <select id="levelSelect">
@@ -71,4 +97,6 @@
 <script src="../map/mapSetup.js" type="module"></script>
 <script src="../map/mapSimulationPlaying.js" type="module"></script>
 <script src="../map/mapLevelSelector.js" type="module"></script>
+<script type="module" src="../map/mapInteraction.js"></script>
+
 </html>

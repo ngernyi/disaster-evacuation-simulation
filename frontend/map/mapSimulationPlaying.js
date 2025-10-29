@@ -138,3 +138,11 @@ export function setCurrentStep(percentage, totalSteps, evacueeGraphic, evacueeMo
         setPauseButton();
     }
 }
+
+export function getIsPause() {
+    return isPaused;
+}
+
+export function getCurrentStep() {
+    return currentStep;
+}

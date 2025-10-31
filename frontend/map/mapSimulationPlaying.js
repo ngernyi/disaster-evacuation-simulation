@@ -12,7 +12,7 @@ let currentStep = 0;
     - evacueesMovement : all evacuees movement
     - interval : interval between each step
 */
-export function playSimulation(evacueeGraphic, evacueeMovement, interval) {
+export function playSimulation(evacueeGraphic, evacueeMovement, fireGraphic, fireStepOrder, interval) {
 
     const flatevacueeMovement = evacueeMovement;
     // console.log("graphic length",evacueeGraphic.length);
@@ -28,13 +28,13 @@ export function playSimulation(evacueeGraphic, evacueeMovement, interval) {
         return;
     }
 
-    updateEvacueesAtStep(currentStep, evacueeGraphic, evacueeMovement);
+    updateEvacueesAtStep(currentStep, evacueeGraphic, fireGraphic, fireStepOrder, evacueeMovement);
 
     // call the function again after the interval
     setTimeout(() => {
         if (!isPaused) {
             currentStep++;
-            playSimulation(evacueeGraphic, evacueeMovement, interval);
+            playSimulation(evacueeGraphic, evacueeMovement, fireGraphic, fireStepOrder, interval);
             // updateProgress(step / evacueeMovement.reduce((max, m) => Math.max(max, m.length), 0) * 100);
             // updateEscapedNumber(currentEscapedNumber);
             // updateTimeProgress(step);
@@ -49,7 +49,7 @@ export function playSimulation(evacueeGraphic, evacueeMovement, interval) {
     // console.log("runSimulation ",currentStep);
 }
 
-function updateEvacueesAtStep(step, evacueeGraphic, evacueeMovement) {
+function updateEvacueesAtStep(step, evacueeGraphic, fireGraphic, fireStepOrder, evacueeMovement) {
     let currentEscapedNumber = 0;
 
     for (let i = 0; i < evacueeGraphic.length; i++) {
@@ -70,7 +70,11 @@ function updateEvacueesAtStep(step, evacueeGraphic, evacueeMovement) {
             spatialReference: { wkid: 4326 }
         };
     }
+    if (step == 1) {
+        console.log("fireStepOrder", fireStepOrder);
+    }
 
+    updateFireGraphic(fireGraphic, step, fireStepOrder);
     updateProgress(step / evacueeMovement.reduce((max, m) => Math.max(max, m.length), 0) * 100);
     updateEscapedNumber(currentEscapedNumber);
     updateTimeProgress(step);
@@ -83,12 +87,12 @@ export function pauseSimulation() {
     setResumeButton();
 }
 
-export function resumeSimulation(evacueeGraphic, evacueeMovement, interval) {
+export function resumeSimulation(evacueeGraphic, evacueeMovement, fireGraphic, fireStepOrder, interval) {
     isPaused = false;
     setPauseButton();
 
     // restart the loop
-    playSimulation(evacueeGraphic, evacueeMovement, interval);
+    playSimulation(evacueeGraphic, evacueeMovement, fireGraphic, fireStepOrder, interval);
 }
 
 export function startSimulation(evacueeGraphic ,evacueeMovement){
@@ -106,26 +110,26 @@ export function startSimulation(evacueeGraphic ,evacueeMovement){
     // }
 }
 
-export function handleControlButton(evacueeGraphic, evacueeMovement, interval){
+export function handleControlButton(evacueeGraphic, evacueeMovement, fireGraphic, fireStepOrder, interval){
     if (isPaused) {
         if (isEnded) {
             currentStep = 0;
             isEnded = false;
         }
-        resumeSimulation(evacueeGraphic, evacueeMovement, interval);
+        resumeSimulation(evacueeGraphic, evacueeMovement, fireGraphic, fireStepOrder, interval);
     }
     else {
         pauseSimulation();
     }
 }
 
-export function setCurrentStep(percentage, totalSteps, evacueeGraphic, evacueeMovement){
+export function setCurrentStep(percentage, totalSteps, evacueeGraphic, evacueeMovement, fireGraphic, fireStepOrder,){
 
     // set the current step to the percentage
     currentStep = Math.round((percentage / 100) * totalSteps);
     
     // adjust the evacuees to the current frame
-    updateEvacueesAtStep(currentStep, evacueeGraphic, evacueeMovement);
+    updateEvacueesAtStep(currentStep, evacueeGraphic, fireGraphic, fireStepOrder, evacueeMovement);
     if(currentStep != totalSteps){
         isEnded = false;
     }
@@ -145,4 +149,22 @@ export function getIsPause() {
 
 export function getCurrentStep() {
     return currentStep;
+}
+
+function updateFireGraphic(fireGraphic, step, fireStepOrder) {
+    // If the current step is greater than the step order of the hazard, show the hazard
+    // if(step % 100 == 0){
+    //     console.log("step", step, fireStepOrder.length);
+    //     for (let i = 0; i < fireStepOrder.length; i++) {
+    //         console.log("fireStepOrder", fireStepOrder[i]);
+    //     }
+    // }
+    for(let i = 0; i < fireGraphic.length; i++){
+        if(fireStepOrder[i] <= step){
+            fireGraphic[i].visible = true;
+        }
+        else{
+            fireGraphic[i].visible = false;
+        }
+    }
 }

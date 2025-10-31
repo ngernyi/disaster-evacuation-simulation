@@ -124,6 +124,7 @@ import { closeMenu } from "../map/mapInteraction.js";
 const evacueesGraphic = [];
 const fireGraphic = [];
 const evacueeMovement = [];
+const fireStepOrder = [];
 let totalSteps = 0;
 const progressContainer = document.getElementById("progressContainer");
 const progressBar = document.getElementById("progressBar");
@@ -136,7 +137,7 @@ progressContainer.addEventListener("click", (e) => {
   const percent = getPercentage(e);
   console.log("Clicked:", percent + "%");
   updateProgress(percent);
-  setCurrentStep(percent, totalSteps, evacueesGraphic, evacueeMovement);
+  setCurrentStep(percent, totalSteps, evacueesGraphic, evacueeMovement, fireGraphic, fireStepOrder);
 });
 
 // handle drag
@@ -212,7 +213,7 @@ function updateDuration() {
 document.getElementById('resumeBtn').addEventListener('click', () => {
     console.log("Resume button clicked");
     // startSimulation(evacueesGraphic, evacueeMovement);
-    handleControlButton(evacueesGraphic, evacueeMovement, 10);
+    handleControlButton(evacueesGraphic, evacueeMovement, fireGraphic, fireStepOrder,10);
 });
 // document.getElementById('pauseBtn').addEventListener('click', pauseSimulation);
 document.getElementById('stopBtn').addEventListener('click', () => {
@@ -276,10 +277,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         // console.log(evacueeMovement);
 
         data.hazards.forEach(hz => {
-            // console.log(hz);
+            console.log(hz);
+            fireStepOrder.push(hz.Step_Order);
             const fireGraphicAdded = addFire(hz.Longitude, hz.Latitude, hz.Z);
             fireGraphic.push(fireGraphicAdded);
         });
+
+        console.log(fireStepOrder);
 
         // update the progress bar, escaped number and duration
         updateProgress(0);
@@ -287,7 +291,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         updateDuration();
 
         // startSimulation
-        playSimulation(evacueesGraphic, evacueeMovement, 10);
+        playSimulation(evacueesGraphic, evacueeMovement, fireGraphic, fireStepOrder, 10);
     })
     .catch(error => console.error('Error:', error)); 
     console.log("done")

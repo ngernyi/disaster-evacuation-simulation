@@ -20,6 +20,8 @@ export function showFloors(event) {
       }
     });
 
+    showsAndHideGraphics(event.target.value);
+
     // fetchAllWalls();
   
     // ===================TO TRIGGER WALL EXTRACTION==================
@@ -167,3 +169,30 @@ document.getElementById('levelSelect').addEventListener('change', (event) => {
     showFloors(event);
 });
   
+function showsAndHideGraphics(floor){
+
+  
+  let min = 0;
+  let max = 15;
+  if (floor === "FLOOR = '1'"){
+    min = 0;
+    max = 3;
+  } else if (floor === "FLOOR = '2'"){
+    min = 3;
+    max = 7;
+  } else if (floor === "FLOOR = '3'"){
+    min = 7;
+    max = 15;
+  }
+  console.log(min, max, floor);
+  for (let i = 0; i < window.mapView.graphics.length; i++) {
+    const graphic = window.mapView.graphics.items[i];
+    const z = graphic.geometry.z;
+
+    if (z <= max && z >= min) {
+      graphic.visible = true;
+    } else {
+      graphic.visible = false;
+    }
+  }  
+}

@@ -66,7 +66,9 @@ def get_simulation_hazards(simulation_id):
             'Latitude': row.Latitude,
             'Longitude': row.Longitude,
             'Z': row.Z,
+            'Step_Order': getattr(row, 'Step_Order', 0) or 0
         })
+        print("hazard", hazards)
 
     return hazards
 
@@ -157,12 +159,14 @@ def save_hazards(simulation_id, hazards_data):
     cursor = conn.cursor()
     
     query = """
-        INSERT INTO Hazards (Simulation_Id,Hazard_Type, Latitude, Longitude, Z)
-        VALUES (?,?,?,?,?)
+        INSERT INTO Hazards (Simulation_Id,Hazard_Type, Latitude, Longitude, Z, Step_Order)
+        VALUES (?,?,?,?,?,?)
     """
     
     for data in hazards_data:
-        cursor.execute(query, (simulation_id, data['hazard_type'], data['latitude'], data['longitude'], data['z']))
+        step_order = data.get('step_order') or 0
+        print("step order", step_order)
+        cursor.execute(query, (simulation_id, data['hazard_type'], data['latitude'], data['longitude'], data['z'], step_order))
         
     conn.commit()
     cursor.close()
@@ -206,3 +210,37 @@ def save_route_point(evacuees_id, longitude, latitude, z, step_order):
     conn.close()
 
     return {"message": "Route point saved successfully"}
+
+def get_evacuees_position(evacuee_id, current_step):
+    conn = get_connection()
+    cursor = conn.cursor()
+    query = """
+        SELECT Latitude, Longitude, Z FROM ROUTE_POINT WHERE Evacuee_Id = ? AND Step_Order = ?
+    """
+
+    cursor.execute(query, (evacuee_id, current_step))
+    rows = cursor.fetchone()
+
+    evacuees_position = rows or None
+    print("evacuees position current step", evacuees_position, current_step, evacuee_id)
+
+    cursor.close()
+    conn.close()
+
+    return evacuees_position
+
+def remove_route_points(evacuee_id, step_order):
+    conn = get_connection()
+    cursor = conn.cursor()  
+    
+    query = """
+        DELETE FROM ROUTE_POINT WHERE Evacuee_Id = ? AND Step_Order > ?
+    """
+    
+    cursor.execute(query, (evacuee_id, step_order))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return {"message": "Route point deleted successfully"}

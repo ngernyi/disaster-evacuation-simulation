@@ -13,6 +13,7 @@ from utils.rvoImplement import runRVO
 from utils.hazardHandler import add_hazard_to_nav_mesh
 from utils.multiFloorRVO import runMultiFloorRVO
 from utils.mapConverter import *
+from utils.RegenerateSim import regenerate_simulation
 from config.db import get_connection
 from flask import send_file
 import time
@@ -90,7 +91,6 @@ def create_custom_sim_route():
             floor = 2
         else :
             floor = 3
-        wallPoints = []
         # for hazard in hazards_list:
         #     wallPoints.append((hazard.get('longitude'), hazard.get('latitude')))
 
@@ -160,19 +160,26 @@ def create_custom_sim_route():
 @sim_blueprint.route('/add_dynamic_hazards', methods = ['POST'])
 def add_dynamic_hazards_route():
     data = request.get_json()
-    simulation_id = data.get('simulation_id')
-    dynamic_hazards = data.get('dynamic_hazards')
-    time = data.get('time')
+    simulation_id = data.get('simulationId')
+    current_step = data.get('currentStep')
+    hazard_type = data.get('hazardType')
+    hazard_position = data.get('hazardPosition')
+    
+    print("add_dynamic_hazards", simulation_id, current_step, hazard_type, hazard_position)
 
-    if not simulation_id or not dynamic_hazards or not time:
-        return jsonify({'success': False,'message': 'Missing simulation ID, dynamic hazards, or time'}), 400
+    if simulation_id is None or current_step is None or hazard_type is None or hazard_position is None:
+        return jsonify({'success': False, 'message': 'Missing simulation ID, current step, hazard type or hazard position'}), 400
 
-    try:
-        add_dynamic_hazards(simulation_id, dynamic_hazards)
-        return jsonify({'success': True})
-    except Exception as e:
-        print(e)
-        return jsonify({'success': False,'message': 'Database error'}), 500
+    regenerate_simulation(simulation_id, current_step, hazard_type, hazard_position)
+    return jsonify({'success': True})
+    # try:
+    #     regenerate_simulation(simulation_id, current_step, hazard_type, hazard_position)
+    #     print("done regenerating simulation")
+    #     return jsonify({'success': True})
+    # except Exception as e:
+    #     print(e)
+    #     traceback.print_exc()
+    #     return jsonify({'success': False,'message': 'Database error'}), 500
 
 @sim_blueprint.route('/get_user_simulations', methods = ['GET'])
 def get_user_simulations_route():

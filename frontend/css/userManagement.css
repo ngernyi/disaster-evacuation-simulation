@@ -146,6 +146,11 @@ body {
     background-color: #B22222;
     color: white;
   }
+
+  .manage-btn {
+    background-color: #2F4F4F;
+    color: white;
+  }
   
   /* Modal */
   .modal {
@@ -225,7 +230,8 @@ body {
     padding: 2rem;
     border-radius: 12px;
     text-align: center;
-    width: 400px;
+    width: 50%;
+    height: auto;
   }
   
   .modal-buttons {
@@ -248,4 +254,51 @@ body {
   #confirmActionBtn {
     background-color: #606060;
   }
+
+/* Add styles for the new inputs and buttons in manageModal */
+#editUsername, #editEmail {
+    width: 100%;
+    padding: 10px 12px;
+    margin-top: 8px;
+    border-radius: 8px;
+    border: 1px solid #666;
+    background-color: #4a4a4a;
+    color: white;
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+#editUsername:focus, #editEmail:focus {
+    outline: none;
+    /* border-color: #4CAF50; */
+    background-color: #3c3c3c;
+}
+
+.save-btn, .cancel-btn {
+    padding: 10px 20px;
+    border-radius: 9999px;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.save-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.save-btn:hover {
+    background-color: #45a049;
+}
+
+.cancel-btn {
+    background-color: #606060;
+    color: white;
+}
+
+.cancel-btn:hover {
+    background-color: #505050;
+}
   

@@ -14,6 +14,11 @@ window.onload = async function () {
     });
 
     if (!response.ok) {
+      // Handle non admin user
+      if(response.status === 403){
+        window.location.href = "http://localhost:5501/Code/frontend/html/landingPage.html";
+      }
+
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
@@ -287,19 +292,94 @@ function createUserItem(user) {
    showConfirmModal('ban', user);
   });
 
+  // Manage button (3 dots)
+  const manageBtn = document.createElement('button');
+  manageBtn.className = 'btn manage-btn';
+  manageBtn.textContent = 'Manage';
+  manageBtn.addEventListener('click', () => {
+    showManageModal(user);
+  });
+
+  // View simulation buttons
+  const viewBtn = document.createElement('button');
+  viewBtn.className = 'btn view-btn';
+  viewBtn.textContent = 'View Simulations';
+  viewBtn.addEventListener('click', () => {
+    window.location.href = 'http://localhost:5501/Code/frontend/html/simulationHistory.html';
+  });
+
   const number_of_simulations = document.createElement('p');
   number_of_simulations.className = 'number_of_simulations';
   number_of_simulations.textContent = `Number of Simulations: ${user.number_of_simulations}`;
   userActions.appendChild(number_of_simulations);
   userActions.appendChild(promoteBtn);
   userActions.appendChild(banBtn);
-
+  userActions.appendChild(manageBtn);
+  userActions.appendChild(viewBtn);
   
 
   item.appendChild(userInfo);
   item.appendChild(userActions);
 
   return item;
+}
+
+function showManageModal(user) {
+  const modal = document.getElementById('manageModal');
+  modal.style.display = 'block';
+  modal.dataset.user_id = user.id; // Set the user_id attribute of the modal
+
+  modal.addEventListener('click', () => {
+    if (event.target === modal) {  // click outside the modal-content
+      modal.style.display = 'none';
+    }
+  });
+
+  const emailTextField = document.getElementById('editEmail');
+  const usernameTextField = document.getElementById('editUsername');
+
+  emailTextField.value = user.email;
+  usernameTextField.value = user.username;
+
+  const saveBtn = document.getElementById('saveUserChangesBtn');
+  saveBtn.addEventListener('click', () => {
+    const newEmail = emailTextField.value;
+    const newUsername = usernameTextField.value;
+    update_user_details(user.id, newEmail, newUsername);
+    modal.style.display = 'none';
+  });
+
+  const cancelBtn = document.getElementById('cancelUserChangesBtn');
+  cancelBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+}
+
+function update_user_details(user_id, newEmail, newUsername) {
+  fetch(`http://localhost:5000/update_user_details`, {
+    credentials: 'include',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ user_id: user_id ,newEmail: newEmail, newUsername: newUsername })
+  }).then(
+    response => response.json()
+  ).then(
+    result => {
+      if (result.success) {
+        const userIndex = listOfUsers.findIndex(user => user.id === user_id);
+        if (userIndex!== -1) {
+          listOfUsers[userIndex].email = newEmail;
+          listOfUsers[userIndex].username = newUsername;
+        }
+        updateListToShow();
+        renderUsers();
+      }
+    }
+  )
+    
+
 }
 
 document.getElementById('genSimBtn').addEventListener('click', function() {

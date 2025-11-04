@@ -13,7 +13,7 @@
       <button class="btn btn-secondary" id="genSimBtn">Generate Simulation</button>
     </div>
 
-    <p class="subtitle">Manage users by promote to admin, unpromote, or ban access.</p>
+    <p class="subtitle">Manage user account and their admin roles.</p>
     <div class="search-container">
         <input
             type="text"
@@ -45,6 +45,8 @@
           <p class="number_of_simulations"></p>
           <button class="btn promote-btn">Promote</button>
           <button class="btn ban-btn">Ban</button>
+          <button class="btn manage-btn"></button>
+          <button class="btn view-btn">View Simulations</button>
         </div>
       </div>
       <!-- Repeat more users here dynamically -->
@@ -73,6 +75,18 @@
     </div>
   </div>
   
+  <div id="manageModal" class="modal">
+    <div class="modal-content">
+      <h3>Edit user details</h3>
+      <input type="text" id="editUsername" placeholder="Enter new username" />
+      <input type="email" id="editEmail" placeholder="Enter new email" style="margin-top: 10px;" />
+      <div class="modal-buttons">
+        <button class="btn save-btn" id="saveUserChangesBtn">Save</button>
+        <button class="btn cancel-btn" id="cancelUserChangesBtn">Cancel</button>
+      </div>
+      
+    </div>
+  </div>
 
   <script src="../ui/userManagement.js"></script>
 </body>

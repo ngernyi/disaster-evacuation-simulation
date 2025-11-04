@@ -131,3 +131,28 @@ def unpromote_user_route():
     conn.close()
 
     return jsonify({'success': True,'message': 'User unpromoted'}), 200
+
+@admin_blueprint.route('/update_user_details', methods = ['POST'])
+def update_user_details_route():
+    # check current user roles
+    current_user_id = session.get('user_info').get('id')
+    if get_user_roles(current_user_id).rstrip()!= "Admin":
+        return jsonify({'success': False,'message': 'Not authorized'}), 403
+    
+    # get user id from request
+    data = request.json
+    print("json data",data)
+    updated_user_id = request.json.get('user_id')
+    print("updated user id",updated_user_id)
+    # set connection
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    # query to reset user status
+    query = "UPDATE [User] SET Username = ?, Email = ? WHERE User_Id = ?"
+    cursor.execute(query, (request.json.get('newUsername'), request.json.get('newEmail'), updated_user_id))
+    conn.commit()
+    conn.close()
+
+    return jsonify({'success': True,'message': 'User details updated'}), 200
+    

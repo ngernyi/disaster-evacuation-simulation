@@ -16,7 +16,8 @@
       </div>
     </div>
 
-    <p class="subtitle">
+    <p class="subtitle" id="subtitle">
+      Simulation History of <br>
       Click the simulations below to view their evaluation. 
     </p>
 
@@ -67,24 +68,29 @@
                 <h3 id="evaluationSimulationName">Name</h3>
                 <button id="closeEvaluationBtn">X</button>
             </div>
-            <div class="evaluation-details">
-                <div class="evaluation-item">
-                    <div class="evaluation-label" id="evaluationDuration">Duration</div>
-                    <div class="evaluation-value" id="evaluationDurationValue">3m 30s</div>
-                </div>
-                <div class="evaluation-item">
-                    <div class="evaluation-label" id="evaluationEvacuees">Number of Evacuees</div>
-                    <div class="evaluation-value" id="evaluationEvacueesValue">85%</div>
-                </div>
-                <div class="evaluation-item">
-                    <div class="evaluation-label" id="evaluationHazards">Number of Hazards</div>
-                    <div class="evaluation-value" id="evaluationHazardsValue">85%</div>
-                </div>
-                <div class="evaluation-item">
-                    <div class="evaluation-label" id="evaluationComputationalTime">Computational Time</div>
-                    <div class="evaluation-value" id="evaluationComputationalTimeValue">85%</div>
-                </div>
+            <div id="loading-spinner" class="spinner" style="display: none;"></div>
+            <div class="evaluation-container">
+              <div class="evaluation-details" id="evaluationDetails">
+                  <div class="evaluation-item">
+                      <div class="evaluation-label" id="evaluationDuration">Duration</div>
+                      <div class="evaluation-value" id="evaluationDurationValue">3m 30s</div>
+                  </div>
+                  <div class="evaluation-item">
+                      <div class="evaluation-label" id="evaluationEvacuees">Number of Evacuees</div>
+                      <div class="evaluation-value" id="evaluationEvacueesValue">85%</div>
+                  </div>
+                  <div class="evaluation-item">
+                      <div class="evaluation-label" id="evaluationHazards">Number of Hazards</div>
+                      <div class="evaluation-value" id="evaluationHazardsValue">85%</div>
+                  </div>
+                  <div class="evaluation-item">
+                      <div class="evaluation-label" id="evaluationComputationalTime">Computational Time</div>
+                      <div class="evaluation-value" id="evaluationComputationalTimeValue">85%</div>
+                  </div>
+              </div>
+              <canvas id="evacuationChart" style="display: none;"></canvas>
             </div>
+
     
             <!-- 📦 Export Buttons -->
             <div class="modal-buttons export-buttons">
@@ -123,5 +129,7 @@
   </div>
 
   <script src="../ui/simulationHistoryScript.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </body>
 </html>

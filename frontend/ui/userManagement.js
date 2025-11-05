@@ -305,7 +305,8 @@ function createUserItem(user) {
   viewBtn.className = 'btn view-btn';
   viewBtn.textContent = 'View Simulations';
   viewBtn.addEventListener('click', () => {
-    window.location.href = 'http://localhost:5501/Code/frontend/html/simulationHistory.html';
+    const user_id = user.id;
+    window.location.href = 'http://localhost:5501/Code/frontend/html/simulationHistory.html?user_id=' + user_id;
   });
 
   const number_of_simulations = document.createElement('p');

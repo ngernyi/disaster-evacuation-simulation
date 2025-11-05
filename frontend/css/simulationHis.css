@@ -505,7 +505,7 @@ body {
   color: #ffffff;
   margin: 10% auto;
   padding: 30px 25px;
-  width: 35vw;
+  width: 60vw;
   border-radius: 12px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
   font-family: 'Segoe UI', sans-serif;
@@ -592,5 +592,45 @@ body {
   #exportPdfBtn:hover,
   #exportCsvBtn:hover {
     opacity: 0.9;
+  }
+  
+  .spinner {
+    border: 6px solid #f3f3f3; /* Light grey */
+    border-top: 6px solid #2A2A2A; /* Blue */
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .evaluation-container {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 40px;
+    margin-top: 20px;
+  }
+  
+  /* left panel (details) */
+  .evaluation-details {
+    flex: 1;
+    /* display: flex; */
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  
+  /* right panel (chart) */
+  #evacuationChart {
+    background-color: white;
+    flex: 1;
+    max-width: 25vw;
+    max-height: 30vh;
   }
   

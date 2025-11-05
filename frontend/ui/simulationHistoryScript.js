@@ -1,12 +1,22 @@
 // declare global variables
 let listOfSimulations = [];
 let listToShow = [];
+let timeData = []; 
+let evacueesEscaped = [];
+let evacuationChartInstance = null; // global or outer scope
 let currentSort = "date";
 let currentKeyword = "";
 
 // Fetch and render simulations on page load
 window.onload = function() {
-    fetch('http://localhost:5000/get_user_simulations', {
+    const params = new URLSearchParams(window.location.search);
+    const userId = params.get('user_id');
+
+    let url = 'http://localhost:5000/get_user_simulations';
+    if (userId) {
+        url += '?user_id=' + userId;
+    }
+    fetch(url, {
         method: 'GET',
         credentials: 'include'
     })
@@ -19,6 +29,12 @@ window.onload = function() {
             duration: sim.Computational_Time ? parseFloat(sim.Computational_Time) : 0
         }));
 
+        const userData = data.user_data;
+        console.log("User Data:", userData);
+
+        if (userData) {
+            document.getElementById('subtitle').textContent = "Simulation History of " + userData.name + ". " +  " Click the simulations below to view their evaluation. ";
+        }
         updateListToShow();
         renderSimulations();
     })
@@ -216,6 +232,16 @@ function showEvaluation(simItem, simId, simName) {
     const evaluationComputationalTimeValue = document.getElementById('evaluationComputationalTimeValue');
     const closeEvaluationBtn = document.getElementById('closeEvaluationBtn');
 
+    // hide the details
+    const evaluationDetails = document.getElementById('evaluationDetails');
+    evaluationDetails.style.display = 'none';
+    
+    // const ctx = document.getElementById('evacuationChart').getContext('2d');
+    // ctx.style.display = 'none';
+
+    // show spinner
+    const spinner = document.getElementById('loading-spinner');
+    spinner.style.display = 'block'; // show spinner
     // fetch the data
     fetch('http://localhost:5000/get_simulation_data?simulation_id='+simId, {
         credentials: 'include',
@@ -224,6 +250,8 @@ function showEvaluation(simItem, simId, simName) {
             'Content-Type': 'application/json'
         }
     }).then(response => response.json()).then(data => {
+        spinner.style.display = 'none';
+        evaluationDetails.style.display = 'flex';
         console.log(data);
         let maxLength = 0;
         for (const evacuation of data.evacuees_routes) {
@@ -242,13 +270,49 @@ function showEvaluation(simItem, simId, simName) {
         evaluationEvacueesValue.textContent = data.evacuees.length;
         evaluationHazardsValue.textContent = data.hazards.length;
         evaluationComputationalTimeValue.textContent = data.simulation_metadata.Computational_Time;
+
+        calculateEscapeOverTime(data.evacuees_routes, maxLength);
+
+        const ctx = document.getElementById('evacuationChart').getContext('2d');
+        document.getElementById('evacuationChart').style.display = 'block';
+
+        if (evacuationChartInstance) {
+            evacuationChartInstance.destroy();
+          }
+
+        evacuationChartInstance  =new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: timeData,
+                datasets: [{
+                label: 'Evacuees Escaped Over Time',
+                data: evacueesEscaped,
+                borderColor: '#2ecc71',
+                fill: true,
+                tension: 0.3
+                }]
+            },
+            options: {
+                scales: {
+                x: { title: { display: true, text: 'Time (s)' } },
+                y: { title: { display: true, text: 'Evacuees Escaped' }, beginAtZero: true }
+                }
+            }
+        });
     })
     
 
     // handle close
     const closeEvaluation = () => {
+        evacuationChartInstance.destroy();
         modal.style.display = 'none';
     }
+    modal.addEventListener('click', (event) => {
+        // If the user clicked directly on the modal background (outside content)
+        if (event.target === modal) {
+          closeEvaluation();
+        }
+      });
     closeEvaluationBtn.addEventListener('click', closeEvaluation);
 
     // display data
@@ -259,6 +323,24 @@ function showEvaluation(simItem, simId, simName) {
     evaluationComputationalTimeValue.textContent = simItem.Computational_Time;
 }
 
+function calculateEscapeOverTime(evacuees, maxLength){
+    timeData = [];
+    evacueesEscaped = [];
+    for (let i = 0; i <= maxLength; i ++) {
+        timeData.push(i);
+    }
+    evacueesEscaped = [];
+    for (const time of timeData) {
+        let count = 0;
+        for (const evacuation of evacuees) {
+            if (evacuation.route.length <= time) {
+                count++;
+                
+            }
+        }
+        evacueesEscaped.push(count);
+    }
+}
 // rename a simulation
 function renameSimulation(simItem, simId, simName){
     const modal = document.getElementById('renameModal');

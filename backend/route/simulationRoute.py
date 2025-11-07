@@ -2,7 +2,7 @@ from flask import Blueprint
 from flask import session
 from flask import jsonify
 from flask import request
-from services.simulationService import create_custom_sim, save_evacuees, get_simulation_metadata, get_simulation_evacuees, save_hazards, get_simulation_hazards, save_route_point, get_evacuees_route, save_route_points_bulk
+from services.simulationService import create_custom_sim, save_evacuees, get_simulation_metadata, get_simulation_evacuees, save_hazards, get_simulation_hazards, save_route_point, get_evacuees_route, save_route_points_bulk, get_simulation_user_id
 from services.reportService import export_pdf, export_csv
 from services.userManagementService import get_user_roles, get_user_data_by_id
 from utils.pathFindingAlgo import dijkstra
@@ -21,6 +21,11 @@ import time
 
 
 sim_blueprint = Blueprint('sim', __name__)
+
+@sim_blueprint.before_request
+def require_login():
+    if 'user_info' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
 
 @sim_blueprint.route('/create_custom_sim', methods = ['POST'])
 def create_custom_sim_route():
@@ -189,9 +194,9 @@ def get_user_simulations_route():
     #     return jsonify({'error': 'Please log in to view simulations'}), 401
     
     user_info = session.get('user_info')
-    if not user_info:
-        # User is not logged in
-        return jsonify({'error': 'Please log in to view simulations'}), 401
+    # if not user_info:
+    #     # User is not logged in
+    #     return jsonify({'error': 'Please log in to view simulations'}), 401
     
     # get user id
     current_user_id = session.get('user_info').get('id')
@@ -317,5 +322,11 @@ def get_simulation_data_route():
         'evacuees_routes': evacuees_routes
     })
 
-
+@sim_blueprint.route('/get_simulation_user_id', methods=['GET'])
+def get_simulation_user_id_route():
+    simulation_id = request.args.get('simulation_id', type=int)
+    
+    user_id = get_simulation_user_id(simulation_id)
+    return jsonify({'user_id': user_id})
+    
     

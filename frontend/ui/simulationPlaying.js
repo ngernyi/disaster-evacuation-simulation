@@ -217,8 +217,25 @@ document.getElementById('resumeBtn').addEventListener('click', () => {
 });
 // document.getElementById('pauseBtn').addEventListener('click', pauseSimulation);
 document.getElementById('stopBtn').addEventListener('click', () => {
-    window.location.href = 'http://localhost:5501/Code/frontend/html/simulationHistory.html';
-})
+    let params = new URLSearchParams(window.location.search);
+    let simulation_id = params.get('simulationId');
+    let userId = null;
+    fetch(`http://localhost:5000/get_simulation_user_id?simulation_id=${simulation_id}`, {
+        method: 'GET',
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+        userId = data.user_id;
+        window.location.href = 'http://localhost:5501/Code/frontend/html/simulationHistory.html?user_id=' + userId;
+    })
+    .catch(error => {
+      console.error(error);
+      window.location.href = 'http://localhost:5501/Code/frontend/html/landingPage.html';
+  });
+  
+    
+});
 
 export function setPauseButton(){
     document.getElementById('resumeBtn').innerHTML = "&#9208;";

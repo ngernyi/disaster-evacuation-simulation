@@ -244,3 +244,14 @@ def remove_route_points(evacuee_id, step_order):
     conn.close()
 
     return {"message": "Route point deleted successfully"}
+
+def get_simulation_user_id(simulation_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    query = "SELECT User_Id FROM Simulation WHERE Simulation_Id = ?"
+    cursor.execute(query, (simulation_id,))
+    row = cursor.fetchone()
+    if row:
+        return row[0]
+    else:
+        return None

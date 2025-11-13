@@ -22,10 +22,10 @@ import time
 
 sim_blueprint = Blueprint('sim', __name__)
 
-@sim_blueprint.before_request
-def require_login():
-    if 'user_info' not in session:
-        return jsonify({'error': 'Unauthorized'}), 401
+# @sim_blueprint.before_request
+# def require_login():
+#     if 'user_info' not in session:
+#         return jsonify({'error': 'Unauthorized'}), 401
 
 @sim_blueprint.route('/create_custom_sim', methods = ['POST'])
 def create_custom_sim_route():
@@ -273,21 +273,26 @@ def rename_simulation_route():
         print(e)
         return jsonify({'success': False,'message': 'Database error'}), 500
     
-@sim_blueprint.route('/export_pdf', methods=['GET','POST'])
+@sim_blueprint.route('/export_pdf', methods=['GET'])
 def export_pdf_route():
-    pdf_buffer = export_pdf()
+    print("reached export pdf route")
+    simulation_id = request.args.get('simulation_id') 
+    print("sim id from export pdf", simulation_id)
+    pdf_buffer = export_pdf(simulation_id)
     
     # send_file properly handles in-memory file responses
     return send_file(
         pdf_buffer,
         mimetype='application/pdf',
         as_attachment=True,
-        download_name='simulation_report.pdf'  # For Flask 2.x
+        download_name='simulation_report.pdf'  
     )
     
-@sim_blueprint.route('/export_csv', methods=['GET','POST'])
+@sim_blueprint.route('/export_csv', methods=['GET'])
 def export_csv_route():
-    csv_buffer = export_csv()
+    simulation_id = request.args.get('simulation_id') 
+    csv_buffer = export_csv(simulation_id)
+    
     
     # send_file properly handles in-memory file responses
     return send_file(

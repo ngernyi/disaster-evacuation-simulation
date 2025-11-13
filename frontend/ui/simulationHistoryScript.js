@@ -231,10 +231,14 @@ function showEvaluation(simItem, simId, simName) {
     const evaluationHazardsValue = document.getElementById('evaluationHazardsValue');
     const evaluationComputationalTimeValue = document.getElementById('evaluationComputationalTimeValue');
     const closeEvaluationBtn = document.getElementById('closeEvaluationBtn');
+    const exportPdfBtn = document.getElementById('exportPdfBtn');
+    const exportCSVBtn = document.getElementById('exportCsvBtn');
 
     // hide the details
     const evaluationDetails = document.getElementById('evaluationDetails');
     evaluationDetails.style.display = 'none';
+    exportPdfBtn.style.display = 'none';
+    exportCSVBtn.style.display = 'none';
     
     // const ctx = document.getElementById('evacuationChart').getContext('2d');
     // ctx.style.display = 'none';
@@ -252,6 +256,8 @@ function showEvaluation(simItem, simId, simName) {
     }).then(response => response.json()).then(data => {
         spinner.style.display = 'none';
         evaluationDetails.style.display = 'flex';
+        exportCSVBtn.style.display = 'block';
+        exportPdfBtn.style.display = 'block';
         console.log(data);
         let maxLength = 0;
         for (const evacuation of data.evacuees_routes) {
@@ -321,6 +327,50 @@ function showEvaluation(simItem, simId, simName) {
     evaluationEvacueesValue.textContent = simItem.Evacuees;
     evaluationHazardsValue.textContent = simItem.Hazards;
     evaluationComputationalTimeValue.textContent = simItem.Computational_Time;
+
+
+
+    exportCSVBtn.addEventListener('click', () => downloadCSV(simId));
+    exportPdfBtn.addEventListener('click', () => downloadPdf(simId));
+
+    
+    
+}
+
+function downloadPdf(simId){
+    fetch('http://localhost:5000/export_pdf?simulation_id='+simId, {
+     method: 'GET' 
+    })
+        .then(response => response.blob())
+        .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "analytic report.pdf";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        })
+        .catch(err => console.error("PDF export failed:", err)
+    );
+}
+
+function downloadCSV(simId){
+    fetch('http://localhost:5000/export_csv?simulation_id='+simId,  {
+     method: 'GET' 
+    })
+        .then(response => response.blob())
+        .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "analytic report.csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        })
+        .catch(err => console.error("CSV export failed:", err)
+    );
 }
 
 function calculateEscapeOverTime(evacuees, maxLength){
@@ -519,35 +569,3 @@ generateSimulationBtn.addEventListener('click', function() {
 
 
 
-// export pdf
-const exportPdfBtn = document.getElementById('exportPdfBtn');
-exportPdfBtn.addEventListener('click', function() {
-    fetch('http://localhost:5000/export_pdf', { method: 'GET' })
-    .then(response => response.blob())
-    .then(blob => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = "analytic report.pdf";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    })
-    .catch(err => console.error("PDF export failed:", err));
-})
-
-const exportCSVBtn = document.getElementById('exportCsvBtn');
-exportCSVBtn.addEventListener('click', function() {
-    fetch('http://localhost:5000/export_csv', { method: 'GET' })
-    .then(response => response.blob())
-    .then(blob => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = "analytic report.csv";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    })
-    .catch(err => console.error("CSV export failed:", err));
-})

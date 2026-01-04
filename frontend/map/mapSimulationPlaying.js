@@ -14,14 +14,9 @@ let currentStep = 0;
 */
 export function playSimulation(evacueeGraphic, evacueeMovement, fireGraphic, fireStepOrder, interval) {
 
-    const flatevacueeMovement = evacueeMovement;
-    // console.log("graphic length",evacueeGraphic.length);
-    // console.log("flat",flatevacueeMovement);
-
-    let maxLength = flatevacueeMovement.reduce((max, movement) => Math.max(max, movement.length), 0);
+    let maxLength = evacueeMovement.reduce((max, movement) => Math.max(max, movement.length), 0);
     // if currentStep is greater than the number of steps, stop the simulation
     if (currentStep > maxLength) {
-        console.log("stopSimulation");
         setReplayButton();
         isPaused = true;
         isEnded = true;
@@ -35,18 +30,11 @@ export function playSimulation(evacueeGraphic, evacueeMovement, fireGraphic, fir
         if (!isPaused) {
             currentStep++;
             playSimulation(evacueeGraphic, evacueeMovement, fireGraphic, fireStepOrder, interval);
-            // updateProgress(step / evacueeMovement.reduce((max, m) => Math.max(max, m.length), 0) * 100);
-            // updateEscapedNumber(currentEscapedNumber);
-            // updateTimeProgress(step);
         }
         else{
             console.log("Simulation paused");
         }
     }, interval);
-
-    
-
-    // console.log("runSimulation ",currentStep);
 }
 
 function updateEvacueesAtStep(step, evacueeGraphic, fireGraphic, fireStepOrder, evacueeMovement) {
@@ -69,9 +57,6 @@ function updateEvacueesAtStep(step, evacueeGraphic, fireGraphic, fireStepOrder, 
             z: nextPosition.Z,
             spatialReference: { wkid: 4326 }
         };
-    }
-    if (step == 1) {
-        console.log("fireStepOrder", fireStepOrder);
     }
 
     updateFireGraphic(fireGraphic, step, fireStepOrder);

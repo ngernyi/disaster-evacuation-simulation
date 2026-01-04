@@ -3,7 +3,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, PageBreak
 from reportlab.lib.units import inch
 import matplotlib.pyplot as plt
 import io
@@ -16,34 +16,63 @@ from services.simulationService import *
 def export_csv(simulation_id):
     # Fetch data
     simulation_data = get_simulation_metadata(simulation_id)
-    evacuees = get_simulation_evacuees(simulation_id)
-    hazards = get_simulation_hazards(simulation_id)
+    evaluation_id = simulation_data.get('Evaluation_Id')
 
-    # Compute evacuee routes and max duration
-    evacuees_routes = []
-    duration = 0
-    for evacuee in evacuees:
-        route = get_evacuees_route(evacuee.get('Evacuee_Id'))
-        route_len = len(route['route']) if route else 0
-        evacuees_routes.append(route_len)
-        duration = max(duration, route_len)
+    # Prepare CSV fieldnames
+    fieldnames = ['Simulation Name', 'Created At', 'Status', 'Computational Time',
+                  'Evacuees', 'Hazards', 'Duration', 'High Risk']
 
-    # Prepare CSV row
-    data = [
-        {
+    data = []
+
+    if evaluation_id:
+        # Batch simulations
+        batch_simulations = get_simulations_by_evaluation(evaluation_id)
+
+        # Compute duration for each
+        for sim in batch_simulations:
+            evacuees_routes = [
+                len(get_evacuees_route(e.get('Evacuee_Id'))['route']) if get_evacuees_route(e.get('Evacuee_Id')) else 0
+                for e in get_simulation_evacuees(sim['Simulation_Id'])
+            ]
+            sim['Duration_sec'] = max(evacuees_routes, default=0) / 50
+
+        # Find highest-risk simulation
+        highest_risk_sim = max(batch_simulations, key=lambda x: x['Duration_sec'], default=None)
+
+        # Add batch rows
+        for sim in batch_simulations:
+            data.append({
+                'Simulation Name': sim['Simulation_Name'],
+                'Created At': sim['Created_At'],
+                'Status': sim['Status'],
+                'Computational Time': round(sim['Computational_Time'], 5),
+                'Evacuees': len(get_simulation_evacuees(sim['Simulation_Id'])),
+                'Hazards': len(get_simulation_hazards(sim['Simulation_Id'])),
+                'Duration': sim['Duration_sec'],
+                'High Risk': 'Yes' if sim['Simulation_Id'] == highest_risk_sim['Simulation_Id'] else ''
+            })
+    else:
+        # Single simulation
+        evacuees = get_simulation_evacuees(simulation_id)
+        hazards = get_simulation_hazards(simulation_id)
+        evacuees_routes = [
+            len(get_evacuees_route(e.get('Evacuee_Id'))['route']) if get_evacuees_route(e.get('Evacuee_Id')) else 0
+            for e in evacuees
+        ]
+        duration = max(evacuees_routes, default=0) / 50
+        data.append({
             'Simulation Name': simulation_data.get('Simulation_Name'),
             'Created At': simulation_data.get('Created_At'),
             'Status': simulation_data.get('Status'),
-            'Computational Time': simulation_data.get('Computational_Time'),
+            'Computational Time': round(simulation_data.get('Computational_Time',0), 5),
             'Evacuees': len(evacuees),
             'Hazards': len(hazards),
-            'Duration': duration
-        }
-    ]
+            'Duration': duration,
+            'High Risk': ''
+        })
 
     # Create CSV in memory
     output = io.StringIO()
-    fieldnames = ['Simulation Name', 'Created At', 'Status', 'Computational Time', 'Evacuees', 'Hazards', 'Duration']
     writer = csv.DictWriter(output, fieldnames=fieldnames)
     writer.writeheader()
     writer.writerows(data)
@@ -54,41 +83,42 @@ def export_csv(simulation_id):
     mem.seek(0)
     return mem
 
-def export_pdf(simulation_id):
-    buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
+
+# def export_pdf(simulation_id):
+#     buffer = io.BytesIO()
+#     c = canvas.Canvas(buffer, pagesize=A4)
     
-    # Fetch simulation data from DB
-    simulation_data = get_simulation_metadata(simulation_id)
-    evacuees = get_simulation_evacuees(simulation_id)
-    hazards = get_simulation_hazards(simulation_id)
-    evacuees_routes = []
-    duration = 0
-    for evacuee in evacuees:
-        route = get_evacuees_route(evacuee.get('Evacuee_Id'))
-        evacuees_routes.append(len(route) if route else 0)
-        duration = max(duration, len(route) if route else 0)
+#     # Fetch simulation data from DB
+#     simulation_data = get_simulation_metadata(simulation_id)
+#     evacuees = get_simulation_evacuees(simulation_id)
+#     hazards = get_simulation_hazards(simulation_id)
+#     evacuees_routes = []
+#     duration = 0
+#     for evacuee in evacuees:
+#         route = get_evacuees_route(evacuee.get('Evacuee_Id'))
+#         evacuees_routes.append(len(route) if route else 0)
+#         duration = max(duration, len(route) if route else 0)
 
 
-    c.setTitle("Simulation Report - " + str(simulation_data.get('Simulation_Name')))
-    c.setFont("Helvetica", 12)
-    # Add simulation details
-    c.drawString(100, 750, "Simulation Details:")
-    c.drawString(100, 730, f"Simulation Name: {simulation_data.get('Simulation_Name')}")
-    c.drawString(100, 710, f"Created At: {simulation_data.get('Created_At')}")
-    c.drawString(100, 690, f"Status: {simulation_data.get('Status')}")
-    c.drawString(100, 670, f"Computational Time: {simulation_data.get('Computational_Time')} ms")
-    c.drawString(100, 650, f"Evacuees: {len(evacuees)}")
-    c.drawString(100, 630, f"Hazards: {len(hazards)}")
-    c.drawString(100, 610, f"Evacuees Routes: {evacuees_routes}")
+#     c.setTitle("Simulation Report - " + str(simulation_data.get('Simulation_Name')))
+#     c.setFont("Helvetica", 12)
+#     # Add simulation details
+#     c.drawString(100, 750, "Simulation Details:")
+#     c.drawString(100, 730, f"Simulation Name: {simulation_data.get('Simulation_Name')}")
+#     c.drawString(100, 710, f"Created At: {simulation_data.get('Created_At')}")
+#     c.drawString(100, 690, f"Status: {simulation_data.get('Status')}")
+#     c.drawString(100, 670, f"Computational Time: {simulation_data.get('Computational_Time')} ms")
+#     c.drawString(100, 650, f"Evacuees: {len(evacuees)}")
+#     c.drawString(100, 630, f"Hazards: {len(hazards)}")
+#     c.drawString(100, 610, f"Evacuees Routes: {evacuees_routes}")
     
-    # c.drawString(100, 750, "Simulation Report")
-    # c.drawString(100, 730, "Generated successfully via Flask + ReportLab!")
-    c.showPage()
-    c.save()
+#     # c.drawString(100, 750, "Simulation Report")
+#     # c.drawString(100, 730, "Generated successfully via Flask + ReportLab!")
+#     c.showPage()
+#     c.save()
 
-    buffer.seek(0)  # Important: rewind the buffer to the start!
-    return buffer
+#     buffer.seek(0)  # Important: rewind the buffer to the start!
+#     return buffer
     
 def export_pdf(simulation_id):
     # Create in-memory buffer
@@ -120,8 +150,8 @@ def export_pdf(simulation_id):
     summary_data = [
         ['Simulation Name:', simulation_data.get('Simulation_Name')],
         ['Created At:', simulation_data.get('Created_At')],
-        ['Duration:', duration],
-        ['Computational Time (ms):', simulation_data.get('Computational_Time')],
+        ['Duration(s):', duration/50],
+        ['Computational Time (s):', simulation_data.get('Computational_Time')],
         ['Evacuees:', len(evacuees)],
         ['Hazards:', len(hazards)],
     ]
@@ -145,45 +175,145 @@ def export_pdf(simulation_id):
     chart_buffer = generate_evacuee_chart(evacuees_routes)
     story.append(Image(chart_buffer, width=5*inch, height=3*inch))
     story.append(Spacer(1, 12))
+    
+    evaluation_id = simulation_data.get('Evaluation_Id')
+    if evaluation_id is not None:
+         # 🏷️ Page 2 Title
+        story.append(Paragraph(
+            "High-Risk Session Analysis",
+            styles['Title']
+        ))
+        story.append(Spacer(1, 12))
+
+        # Fetch batch simulations
+        batch_simulations = get_simulations_by_evaluation(evaluation_id)
+
+        analysis_data = [['Simulation Name', 'Evacuees', 'Duration (s)', 'Computational Time (s)']]
+
+        for sim in batch_simulations:
+            evacuees = get_simulation_evacuees(sim['Simulation_Id'])
+            evacuee_count = len(evacuees)
+
+            max_steps = 0
+            for evacuee in evacuees:
+                route = get_evacuees_route(evacuee.get('Evacuee_Id'))
+                if route:
+                    max_steps = max(max_steps, len(route['route']))
+
+            # Convert steps → seconds
+            duration_seconds = max_steps / 50
+
+            # Format computational time
+            comp_time = round(sim['Computational_Time'], 5)
+
+            sim['Duration'] = duration_seconds
+
+            analysis_data.append([
+                sim['Simulation_Name'],
+                evacuee_count,
+                f"{duration_seconds:.2f}",   # duration shown nicely
+                f"{comp_time:.5f}"
+            ])
+
+
+        analysis_table = Table(analysis_data, colWidths=[200, 120, 120])
+        analysis_table.setStyle(TableStyle([
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#D6EAF8')),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('ALIGN', (1, 1), (-1, -1), 'CENTER'),
+        ]))
+
+        story.append(analysis_table)
+        story.append(Spacer(1, 20))
+
+        # 📊 Comparison Graph
+        comparison_chart = generate_batch_comparison_chart(batch_simulations)
+        story.append(Image(comparison_chart, width=5*inch, height=3*inch))
+        
+        # HIGH RISK SESSION
+        # Identify highest-risk simulation (longest duration)
+        highest_risk_sim = max(
+            batch_simulations,
+            key=lambda sim: sim.get('Duration', 0),
+            default=None
+        )
+
+        story.append(Spacer(1, 16))
+        story.append(Paragraph(
+            "High-Risk Session Summary",
+            styles['Heading2']
+        ))
+        story.append(Spacer(1, 8))
+        
+        if highest_risk_sim:
+            risk_text = f"""
+            Among all simulations in this batch, 
+            <b>{highest_risk_sim['Simulation_Name']}</b> was identified as the 
+            <b>highest-risk session</b>. This simulation recorded the longest 
+            evacuation duration of <b>{highest_risk_sim['Duration']:.2f} seconds</b>, 
+            indicating slower evacuation performance and increased exposure to hazards.
+            """
+
+            story.append(Paragraph(risk_text, styles['BodyText']))
+
+
+        
 
     # 📄 Build the document
     doc.build(story)
     buffer.seek(0)
     return buffer
 
-def generate_evacuee_chart(evacuees_routes):
-    """
-    evacuees_routes: list of lists
-        Example: [[(x1,y1,z1), (x2,y2,z2)], [(x1,y1)], [(x1,y1),(x2,y2),(x3,y3)]]
-    """
-    
-    # Find the maximum route length (longest path)
-    max_length = max(evacuees_routes) if evacuees_routes else 0
+def generate_evacuee_chart(evacuees_routes, steps_per_second=50):
+    if not evacuees_routes:
+        return None
 
-    # Simulate escape progress over time
-    time_steps = list(range(max_length + 1))
+    max_step = max(evacuees_routes)
+
+    # Count evacuees finishing at each step
+    finished_at = [0] * (max_step + 1)
+    for step in evacuees_routes:
+        finished_at[step] += 1
+
+    # Build cumulative escaped count
     evacuees_escaped = []
+    cumulative = 0
+    for i in range(max_step + 1):
+        cumulative += finished_at[i]
+        evacuees_escaped.append(cumulative)
 
-    for t in time_steps:
-        count = sum(1 for length in evacuees_routes if length <= t)
-        evacuees_escaped.append(count)
+    time_seconds = []
+    escaped_sampled = []
 
-    # --- Plot as line chart ---
+    # Sample every full second
+    for step in range(0, max_step + 1, steps_per_second):
+        time_seconds.append(step / steps_per_second)
+        escaped_sampled.append(evacuees_escaped[step])
+
+    # ✅ Ensure final partial second is included
+    if max_step % steps_per_second != 0:
+        time_seconds.append(max_step / steps_per_second)
+        escaped_sampled.append(evacuees_escaped[-1])
+
+    # Plot
     fig, ax = plt.subplots(figsize=(6, 4))
-    ax.plot(time_steps, evacuees_escaped, marker='o', color="#3498db", linewidth=2)
+    ax.plot(time_seconds, escaped_sampled, marker='o', linewidth=2)
 
     ax.set_title("Evacuation Progress Over Time")
-    ax.set_xlabel("Time Step")
+    ax.set_xlabel("Time (seconds)")
     ax.set_ylabel("Number of Evacuees Escaped")
     ax.grid(True, linestyle='--', alpha=0.6)
 
-    # Save chart to memory buffer
-    chart_buffer = io.BytesIO()
+    buffer = io.BytesIO()
     plt.tight_layout()
-    plt.savefig(chart_buffer, format='PNG')
+    plt.savefig(buffer, format="PNG")
     plt.close(fig)
-    chart_buffer.seek(0)
-    return chart_buffer
+    buffer.seek(0)
+
+    return buffer
+
+
 
 
 
@@ -206,6 +336,50 @@ def export_pdf_alternative():
     p.save()
 
     buffer.seek(0)
+    return buffer
+
+def generate_batch_comparison_chart(batch_simulations):
+    """
+    Generates a bar chart comparing evacuation durations for multiple simulations.
+
+    :param batch_simulations: list of dicts, each with keys:
+        - 'Simulation_Name'
+        - 'Duration' (int)
+    :return: io.BytesIO buffer containing the PNG chart
+    """
+    # Extract names and durations
+    sim_names = [sim['Simulation_Name'] for sim in batch_simulations]
+    durations = [sim['Duration'] for sim in batch_simulations]
+
+    # Create figure
+    plt.figure(figsize=(8, 4))
+    bars = plt.bar(sim_names, durations, color='#2E86C1')
+
+    # Add data labels on top of bars
+    for bar in bars:
+        height = bar.get_height()
+        plt.text(
+            bar.get_x() + bar.get_width() / 2,
+            height,
+            f'{height}',
+            ha='center',
+            va='bottom',
+            fontsize=8
+        )
+
+    # Labels and title
+    plt.xlabel("Simulation")
+    plt.ylabel("Evacuation Duration (steps)")
+    plt.title("High-Risk Session Analysis - Batch Comparison")
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+
+    # Save figure to in-memory buffer
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png')
+    plt.close()  # Close figure to free memory
+    buffer.seek(0)
+
     return buffer
 
 if __name__ == '__main__':

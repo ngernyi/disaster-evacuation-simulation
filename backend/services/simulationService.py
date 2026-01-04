@@ -255,3 +255,165 @@ def get_simulation_user_id(simulation_id):
         return row[0]
     else:
         return None
+    
+def add_config_details(config_id, longitude, latitude, z):
+    conn = get_connection()
+    cursor = conn.cursor()
+    query = """
+        INSERT INTO EvacueeConfigDetail (Config_Id, longitude, latitude ,z)
+        VALUES (?,?,?,?)
+    """
+    cursor.execute(query, (config_id, longitude, latitude, z))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"message": "Config details added successfully"}	
+
+def get_confid_id(day, session):    
+    SESSION_MAP = {
+        "8:00 AM": "8am",
+        "9:00 AM": "9am",
+        "10:00 AM": "10am",
+        "11:00 AM": "11am",
+        "12:00 PM": "12pm",
+        "1:00 PM": "1pm",
+        "2:00 PM": "2pm",
+        "3:00 PM": "3pm",
+        "4:00 PM": "4pm",
+        "5:00 PM": "5pm"
+    }
+    day_str = day[0]
+    session_str = session[0]
+    db_session = SESSION_MAP.get(session)
+    print("db session", db_session) 
+    print("day", day, "session", session_str)
+    conn = get_connection()
+    cursor = conn.cursor()
+    query = "SELECT config_id FROM EvacueeConfig WHERE day = ? AND session =?"
+    cursor.execute(query, (day, db_session))
+    row = cursor.fetchone()
+    if row:
+        return row[0]
+    else:
+        return None
+
+def get_config_details(config_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    query = "SELECT longitude, latitude, z FROM EvacueeConfigDetail WHERE config_id = ?"
+    cursor.execute(query, (config_id,))
+    
+    rows = cursor.fetchall()  # fetch all rows
+    cursor.close()
+    conn.close()
+
+    if not rows:
+        return []
+
+    # Convert each row to a dict matching frontend
+    evacuees_list = []
+    for row in rows:
+        evacuees_list.append({
+            "longitude": row[0],
+            "latitude": row[1],
+            "z": row[2]
+        })
+
+    return evacuees_list
+
+def create_evaluation(batch_sim_name):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO evaluation (batch_name, high_risk_simulation_id)
+        OUTPUT INSERTED.evaluation_id
+        VALUES (?, NULL)
+    """, (batch_sim_name,))
+
+    evaluation_id = cursor.fetchone()[0]
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    print("evaluation id", evaluation_id)
+    return evaluation_id
+
+
+
+
+def update_high_risk_simulation_id(evaluation_id, simulation_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE evaluation
+        SET high_risk_simulation_id = ?
+        WHERE evaluation_id = ?
+    """, (simulation_id, evaluation_id))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def get_simulations_by_evaluation(evaluation_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT * FROM Simulation
+        WHERE Evaluation_Id =?
+    """, (evaluation_id,))
+
+    rows = cursor.fetchall()
+
+    simulations = []
+    for row in rows:
+        simulations.append({
+            'Simulation_Id': row.Simulation_Id,
+            'Simulation_Name': row.Simulation_Name,
+            'Created_At': str(row.Created_At),
+            'Status': row.Status,
+            'Computational_Time': row.Computational_Time,
+            'Evaluation_Id': row.Evaluation_Id,
+        })
+
+    cursor.close()
+    return simulations
+
+def save_computational_time(time, simulation_id):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE Simulation
+            SET Computational_Time = ?
+            WHERE Simulation_Id = ?
+        """, (time, simulation_id))
+
+        conn.commit()
+        print(f"Computational time saved for Simulation_Id {simulation_id}")
+    except Exception as e:
+        print("Error saving computational time:", e)
+    finally:
+        cursor.close()
+        conn.close()
+
+def save_simulation_duration(duration, simulation_id):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE Simulation
+            SET Duration =?
+            WHERE Simulation_Id =?
+        """, (duration, simulation_id))
+
+        conn.commit()
+        print(f"Simulation duration saved for Simulation_Id {simulation_id}")
+    except Exception as e:
+        print("Error saving simulation duration:", e)
+    finally:
+        cursor.close()
+        conn.close()

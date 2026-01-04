@@ -125,6 +125,7 @@ const evacueesGraphic = [];
 const fireGraphic = [];
 const evacueeMovement = [];
 const fireStepOrder = [];
+const speed = 20;
 let totalSteps = 0;
 const progressContainer = document.getElementById("progressContainer");
 const progressBar = document.getElementById("progressBar");
@@ -178,11 +179,11 @@ export function updateEscapedNumber(num) {
 }
 // uodate time progress
 export function updateTimeProgress(currentStep){
-    const duration = totalSteps * 10 / 1000; 
+    const duration = totalSteps *speed / 1000; 
     const minutes = Math.floor(duration / 60);
     const seconds = Math.floor(duration % 60);
 
-    const currentDuration = currentStep * 10 / 1000; 
+    const currentDuration = currentStep * speed/ 1000; 
     const currentMinutes = Math.floor(currentDuration / 60);
     const currentSeconds = Math.floor(currentDuration % 60);
 
@@ -196,7 +197,7 @@ export function updateTimeProgress(currentStep){
 
 // update duration
 function updateDuration() {
-  const duration = totalSteps * 10 / 1000; // 10ms per stepl
+  const duration = totalSteps *speed / 1000; // 83ms per stepl
   const minutes = Math.floor(duration / 60);
   const seconds = Math.floor(duration % 60);
   if (minutes == 0) {
@@ -213,7 +214,7 @@ function updateDuration() {
 document.getElementById('resumeBtn').addEventListener('click', () => {
     console.log("Resume button clicked");
     // startSimulation(evacueesGraphic, evacueeMovement);
-    handleControlButton(evacueesGraphic, evacueeMovement, fireGraphic, fireStepOrder,10);
+    handleControlButton(evacueesGraphic, evacueeMovement, fireGraphic, fireStepOrder,speed);
 });
 // document.getElementById('pauseBtn').addEventListener('click', pauseSimulation);
 document.getElementById('stopBtn').addEventListener('click', () => {
@@ -261,7 +262,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         credentials: 'include'
     })
     .then(response => {
-      console.log("Status:", response.status);
       return response.json();
     })
     .then(data => {
@@ -308,7 +308,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         updateDuration();
 
         // startSimulation
-        playSimulation(evacueesGraphic, evacueeMovement, fireGraphic, fireStepOrder, 10);
+        playSimulation(evacueesGraphic, evacueeMovement, fireGraphic, fireStepOrder, speed);
     })
     .catch(error => console.error('Error:', error)); 
     console.log("done")
@@ -352,7 +352,7 @@ cancelAddBtn.addEventListener('click', () => {
 
   // if the previous playing mode is play, resume the simulation
   if(isPaused === false){
-    handleControlButton(evacueesGraphic, evacueeMovement, 10);
+    handleControlButton(evacueesGraphic, evacueeMovement, speed);
   }
 });
 

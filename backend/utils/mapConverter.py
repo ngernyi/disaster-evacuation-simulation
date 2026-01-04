@@ -18,8 +18,6 @@ def from_utm_to_grid(x, y, minMaxXY, cell_size=0.05):
     # Calculate column (X direction)
     col = int((x - min_x) / cell_size)
     
-    # Calculate row (Y direction) - NOTE: Grid row 0 should be at min_y, not max_y
-    # This ensures that higher UTM Y values correspond to higher row indices
     row = int((y - min_y) / cell_size)
     
     # Clamp to grid bounds

@@ -143,12 +143,28 @@ document.getElementById('userManagementText').addEventListener('click', function
   window.location.href = 'http://localhost:5501/Code/frontend/html/userManagement.html';
 });
   
-document.getElementById('customSimButton').addEventListener('click', function() {
-  const customSimData = {
-    simulationName: document.getElementById('customNameInput').value,
-    evacuees: evacuuesAdded,
-    hazards: hazardsAdded,
-  };
+const input = document.getElementById("customNameInput");
+
+document.getElementById("customSimButton").addEventListener("click", function () {
+    const simulationName = input.value.trim();
+
+    if (!simulationName) {
+        input.classList.add("error");
+        input.value = "";
+        input.placeholder = "Simulation name is required";
+        return;
+    }
+
+    // reset to normal
+    input.classList.remove("error");
+    input.placeholder = "Enter simulation name";
+
+    const customSimData = {
+        simulationName,
+        evacuees: evacuuesAdded,
+        hazards: hazardsAdded,
+    };
+
   console.log(customSimData.simulationName);
     // Show loading modal
     document.getElementById("loadingModal").style.display = "flex";
@@ -179,30 +195,75 @@ document.getElementById('sessionSelectButton').addEventListener('click', functio
 });
 
 document.getElementById('sessionSimButton').addEventListener('click', function() {
+  const sessionNameInput = document.getElementById('sessionNameInput');
   const sessionSimData = {
-    simulationName: document.getElementById('sessionNameInput').value,
+    simulationName: sessionNameInput.value,
     evacuees: evacuuesAdded,
     hazards: hazardsAdded,
+    days: days,
+    sessions: sessions,
   };
   console.log(sessionSimData.simulationName);
-    fetch('http://localhost:5000/create_custom_sim', {
+
+  const simulationName = document.getElementById('sessionNameInput').value.trim();
+
+  if (!simulationName) {
+    sessionNameInput.classList.add("error");
+    sessionNameInput.value = "";
+    sessionNameInput.placeholder = "Simulation name is required";
+      return;
+  }
+
+  // reset to normal
+  sessionNameInput.classList.remove("error");
+  sessionNameInput.placeholder = "Enter simulation name";
+  // Show loading modal
+  document.getElementById("loadingModal").style.display = "flex";
+    fetch('http://localhost:5000/create_session_sim', {
       credentials: 'include', // Important: sends cookies (session)
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',
       },
-      body: JSON.stringify(customSimData),
+      body: JSON.stringify(sessionSimData),
     })
     .then(response => response.json())
     .then(data => {
-      console.log(data);
-      console.log(data.simulation_id);
-        const simulationId = data.simulation_id;
-        window.location.href = "http://localhost:5501/Code/frontend/html/simulationPlaying.html?simulationId=" + simulationId;
+      // console.log(data);
+      // console.log(data.simulation_id);
+        // const simulationId = data.simulation_id;
+        window.location.href = "http://localhost:5501/Code/frontend/html/simulationHistory.html";
 
 
     })
     .catch((error) => {
         console.error('Error:', error);
+    });
+});
+
+document.getElementById('addConfigButton').addEventListener('click', function(event) {
+  const configuration = {
+    evacuees: evacuuesAdded,
+    days: days,
+    sessions: sessions,
+  };
+
+  fetch('http://localhost:5000/create_config', {
+    credentials: 'include', // Important: sends cookies (session)
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(configuration),
+  })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      // console.log(data.config_id);
+      // const configId = data.config_id;
+      // window.location.href = "http://localhost:5501/Code/frontend/html/simulationPlaying.html?configId=" + configId;
+    })
+    .catch((error) => {
+      console.error('Error:', error);
     });
 });

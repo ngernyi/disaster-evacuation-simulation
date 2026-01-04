@@ -349,3 +349,24 @@ html, body {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
+
+  /* .textInput {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    transition: border-color 0.2s, background-color 0.2s;
+} */
+
+.textInput.error {
+    border-color: #d9534f;
+    background-color: #fff6f6;
+}
+
+.textInput::placeholder {
+    color: #999;
+}
+
+.textInput.error::placeholder {
+    color: #d9534f;
+}
+

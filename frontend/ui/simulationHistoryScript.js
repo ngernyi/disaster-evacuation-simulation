@@ -26,7 +26,7 @@ window.onload = function() {
             id: sim.Simulation_Id,
             name: sim.Simulation_Name || 'Unnamed Simulation',
             date: sim.Created_At,
-            duration: sim.Computational_Time ? parseFloat(sim.Computational_Time) : 0
+            duration: sim.Duration ? parseFloat(sim.Duration/50) : 0
         }));
 
         const userData = data.user_data;
@@ -239,6 +239,17 @@ function showEvaluation(simItem, simId, simName) {
     evaluationDetails.style.display = 'none';
     exportPdfBtn.style.display = 'none';
     exportCSVBtn.style.display = 'none';
+
+    if (evacuationChartInstance) {
+        evacuationChartInstance.destroy();
+        evacuationChartInstance = null;
+    
+        const canvas = document.getElementById('evacuationChart');
+        document.getElementById('evacuationChart').style.display = 'none';
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    
     
     // const ctx = document.getElementById('evacuationChart').getContext('2d');
     // ctx.style.display = 'none';
@@ -258,14 +269,14 @@ function showEvaluation(simItem, simId, simName) {
         evaluationDetails.style.display = 'flex';
         exportCSVBtn.style.display = 'block';
         exportPdfBtn.style.display = 'block';
-        console.log(data);
+        // console.log(data);
         let maxLength = 0;
         for (const evacuation of data.evacuees_routes) {
             if (evacuation.route.length > maxLength) {
                 maxLength = evacuation.route.length;
             }   
         }
-        const duration = maxLength * 100 / 1000; 
+        const duration = maxLength /50; 
         const minutes = Math.floor(duration / 60);
         const seconds = Math.floor(duration % 60);
         let durationText = `${minutes}m ${seconds}s`;
@@ -323,74 +334,124 @@ function showEvaluation(simItem, simId, simName) {
 
     // display data
     evaluationSimulationName.textContent = simName;
-    evaluatioDurationValue.textContent = simItem.Computational_Time;
+    evaluatioDurationValue.textContent = simItem.Duration;
     evaluationEvacueesValue.textContent = simItem.Evacuees;
     evaluationHazardsValue.textContent = simItem.Hazards;
     evaluationComputationalTimeValue.textContent = simItem.Computational_Time;
 
 
 
-    exportCSVBtn.addEventListener('click', () => downloadCSV(simId));
-    exportPdfBtn.addEventListener('click', () => downloadPdf(simId));
+    exportCSVBtn.addEventListener('click', () => downloadCSV(simId, simName));
+    exportPdfBtn.addEventListener('click', () => downloadPdf(simId, simName));
 
     
     
 }
 
-function downloadPdf(simId){
-    fetch('http://localhost:5000/export_pdf?simulation_id='+simId, {
-     method: 'GET' 
+function downloadPdf(simId, simName) {
+    const btn = document.getElementById("exportPdfBtn");
+    const originalText = btn.textContent;
+
+    btn.textContent = "Exporting...";
+    btn.disabled = true;
+
+    fetch('http://localhost:5000/export_pdf?simulation_id=' + simId, {
+        method: 'GET'
     })
-        .then(response => response.blob())
-        .then(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = "analytic report.pdf";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Export failed");
+            }
+            return response.blob();
         })
-        .catch(err => console.error("PDF export failed:", err)
-    );
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "analytic report - " + simName + ".pdf";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        })
+        .catch(err => {
+            console.error("PDF export failed:", err);
+        })
+        .finally(() => {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        });
 }
 
-function downloadCSV(simId){
+
+function downloadCSV(simId, simName){
+    const btn = document.getElementById("exportCsvBtn");
+    const originalText = btn.textContent;
+
+    btn.textContent = "Exporting...";
+    btn.disabled = true;
     fetch('http://localhost:5000/export_csv?simulation_id='+simId,  {
      method: 'GET' 
     })
-        .then(response => response.blob())
-        .then(blob => {
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Export failed");
+        }
+        return response.blob();
+    })
+    .then(blob => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = "analytic report.csv";
+        a.download = "analytic report - " + simName + ".csv";
         document.body.appendChild(a);
         a.click();
         a.remove();
-        })
-        .catch(err => console.error("CSV export failed:", err)
-    );
+    })
+    .catch(err => {
+        console.error("CSV export failed:", err);
+    })
+    .finally(() => {
+        btn.textContent = originalText;
+        btn.disabled = false;
+    });
 }
 
-function calculateEscapeOverTime(evacuees, maxLength){
+function calculateEscapeOverTime(evacuees, maxLength) {
     timeData = [];
     evacueesEscaped = [];
-    for (let i = 0; i <= maxLength; i ++) {
+
+    // Step 1: initialize finished count array
+    const finishedAtStep = new Array(maxLength + 1).fill(0);
+
+    // Step 2: record at which step each evacuee finishes
+    for (const evac of evacuees) {
+        const endStep = evac.route.length;
+        if (endStep <= maxLength) finishedAtStep[endStep]++;
+        else finishedAtStep[maxLength]++;
+    }
+
+    // Step 3: cumulative sum to get evacueesEscaped over time
+    let cumulative = 0;
+    for (let i = 0; i <= maxLength; i++) {
+        cumulative += finishedAtStep[i];
         timeData.push(i);
+        evacueesEscaped.push(cumulative);
     }
-    evacueesEscaped = [];
-    for (const time of timeData) {
-        let count = 0;
-        for (const evacuation of evacuees) {
-            if (evacuation.route.length <= time) {
-                count++;
-                
-            }
-        }
-        evacueesEscaped.push(count);
+    // Step 4 : Leave only every 50 steps
+    timeData = timeData.filter((_, index) => index % 50 === 0);
+    for (let i = 0; i < timeData.length; i++) {
+        timeData[i] = timeData[i] / 50;
     }
+    // for (let i = 0; i < evacueesEscaped.length; i++) {
+    //     evacueesEscaped[i] = evacueesEscaped[i] / 50;
+    // }
+    evacueesEscaped = evacueesEscaped.filter((_, index) => index % 50 === 0);
+
+    // Step 5: Add last 
+    timeData.push(maxLength / 50);
+    evacueesEscaped.push(evacuees.length);
 }
+
 // rename a simulation
 function renameSimulation(simItem, simId, simName){
     const modal = document.getElementById('renameModal');

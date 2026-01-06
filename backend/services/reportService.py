@@ -179,40 +179,192 @@ def export_csv(simulation_id):
 #     buffer.seek(0)  # Important: rewind the buffer to the start!
 #     return buffer
     
-def export_pdf(simulation_id):
-    # Create in-memory buffer
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4,
-                            rightMargin=40, leftMargin=40,
-                            topMargin=60, bottomMargin=40)
+# def export_pdf(simulation_id):
+#     # Create in-memory buffer
+#     buffer = io.BytesIO()
+#     doc = SimpleDocTemplate(buffer, pagesize=A4,
+#                             rightMargin=40, leftMargin=40,
+#                             topMargin=60, bottomMargin=40)
 
+#     styles = getSampleStyleSheet()
+#     story = []
+
+#     # 🏷️ Title
+#     title_style = styles['Title']
+#     story.append(Paragraph("Simulation Report", title_style))
+#     story.append(Spacer(1, 12))
+
+#     # Fetch data
+#     simulation_data = get_simulation_metadata(simulation_id)
+#     evacuees = get_simulation_evacuees(simulation_id)
+#     hazards = get_simulation_hazards(simulation_id)
+#     evacuees_routes = []
+#     duration = 0
+#     for evacuee in evacuees:
+#         route = get_evacuees_route(evacuee.get('Evacuee_Id'))
+#         evacuees_routes.append(len(route['route']) if route else 0)
+#         duration = max(duration, len(route['route']) if route else 0)
+
+#     # 🧾 Summary Table
+#     summary_data = [
+#         ['Simulation Name:', simulation_data.get('Simulation_Name')],
+#         ['Created At:', simulation_data.get('Created_At')],
+#         ['Duration(s):', duration/50],
+#         ['Computational Time (s):', simulation_data.get('Computational_Time')],
+#         ['Evacuees:', len(evacuees)],
+#         ['Hazards:', len(hazards)],
+#     ]
+
+#     table = Table(summary_data, colWidths=[200, 300])
+#     table.setStyle(TableStyle([
+#         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2E86C1')),
+#         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+#         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+#         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+#         ('FONTSIZE', (0, 0), (-1, -1), 10),
+#         ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+#         ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#EBF5FB')),
+#         ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+#     ]))
+
+#     story.append(table)
+#     story.append(Spacer(1, 20))
+
+#     # 🧮 Add a graph (see below)
+#     chart_buffer = generate_evacuee_chart(evacuees_routes)
+#     story.append(Image(chart_buffer, width=5*inch, height=3*inch))
+#     story.append(Spacer(1, 12))
+    
+#     evaluation_id = simulation_data.get('Evaluation_Id')
+#     if evaluation_id is not None:
+#          # 🏷️ Page 2 Title
+#         story.append(Paragraph(
+#             "High-Risk Session Analysis",
+#             styles['Title']
+#         ))
+#         story.append(Spacer(1, 12))
+
+#         # Fetch batch simulations
+#         batch_simulations = get_simulations_by_evaluation(evaluation_id)
+
+#         analysis_data = [['Simulation Name', 'Evacuees', 'Duration (s)', 'Computational Time (s)']]
+
+#         for sim in batch_simulations:
+#             evacuees = get_simulation_evacuees(sim['Simulation_Id'])
+#             evacuee_count = len(evacuees)
+
+#             max_steps = 0
+#             for evacuee in evacuees:
+#                 route = get_evacuees_route(evacuee.get('Evacuee_Id'))
+#                 if route:
+#                     max_steps = max(max_steps, len(route['route']))
+
+#             # Convert steps → seconds
+#             duration_seconds = max_steps / 50
+
+#             # Format computational time
+#             comp_time = round(sim['Computational_Time'], 5)
+
+#             sim['Duration'] = duration_seconds
+
+#             analysis_data.append([
+#                 sim['Simulation_Name'],
+#                 evacuee_count,
+#                 f"{duration_seconds:.2f}",   # duration shown nicely
+#                 f"{comp_time:.5f}"
+#             ])
+
+
+#         analysis_table = Table(analysis_data, colWidths=[200, 120, 120])
+#         analysis_table.setStyle(TableStyle([
+#             ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+#             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#D6EAF8')),
+#             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+#             ('ALIGN', (1, 1), (-1, -1), 'CENTER'),
+#         ]))
+
+#         story.append(analysis_table)
+#         story.append(Spacer(1, 20))
+
+#         # 📊 Comparison Graph
+#         comparison_chart = generate_batch_comparison_chart(batch_simulations)
+#         story.append(Image(comparison_chart, width=5*inch, height=3*inch))
+        
+#         # HIGH RISK SESSION
+#         # Identify highest-risk simulation (longest duration)
+#         highest_risk_sim = max(
+#             batch_simulations,
+#             key=lambda sim: sim.get('Duration', 0),
+#             default=None
+#         )
+
+#         story.append(Spacer(1, 16))
+#         story.append(Paragraph(
+#             "High-Risk Session Summary",
+#             styles['Heading2']
+#         ))
+#         story.append(Spacer(1, 8))
+        
+#         if highest_risk_sim:
+#             risk_text = f"""
+#             Among all simulations in this batch, 
+#             <b>{highest_risk_sim['Simulation_Name']}</b> was identified as the 
+#             <b>highest-risk session</b>. This simulation recorded the longest 
+#             evacuation duration of <b>{highest_risk_sim['Duration']:.2f} seconds</b>, 
+#             indicating slower evacuation performance and increased exposure to hazards.
+#             """
+
+#             story.append(Paragraph(risk_text, styles['BodyText']))
+
+
+        
+
+#     # 📄 Build the document
+#     doc.build(story)
+#     buffer.seek(0)
+#     return buffer
+
+def export_pdf(simulation_id):
+    # 1. Fetch initial metadata
+    simulation_data = get_simulation_metadata(simulation_id)
+    if not simulation_data:
+        return None
+    
+    evaluation_id = simulation_data.get('Evaluation_Id')
+    
+    # 2. Determine batch vs single and get IDs
+    if evaluation_id:
+        batch_simulations = get_simulations_by_evaluation(evaluation_id)
+        sim_ids = [s['Simulation_Id'] for s in batch_simulations]
+    else:
+        batch_simulations = [simulation_data]
+        sim_ids = [simulation_id]
+
+    # 3. 🔥 THE SPEED FIX: Get all counts and durations in ONE trip
+    # This replaces the nested loops that were killing your performance
+    stats_map = get_export_stats_batch(sim_ids)
+
+    # Prepare PDF Buffer
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=40, leftMargin=40, topMargin=60, bottomMargin=40)
     styles = getSampleStyleSheet()
     story = []
 
     # 🏷️ Title
-    title_style = styles['Title']
-    story.append(Paragraph("Simulation Report", title_style))
+    story.append(Paragraph("Simulation Report", styles['Title']))
     story.append(Spacer(1, 12))
 
-    # Fetch data
-    simulation_data = get_simulation_metadata(simulation_id)
-    evacuees = get_simulation_evacuees(simulation_id)
-    hazards = get_simulation_hazards(simulation_id)
-    evacuees_routes = []
-    duration = 0
-    for evacuee in evacuees:
-        route = get_evacuees_route(evacuee.get('Evacuee_Id'))
-        evacuees_routes.append(len(route['route']) if route else 0)
-        duration = max(duration, len(route['route']) if route else 0)
-
-    # 🧾 Summary Table
+    # Get data for the specific simulation requested
+    current_stats = stats_map.get(simulation_id, {'evacuees': 0, 'hazards': 0, 'duration': 0})
+    
+    # 🧾 Summary Table (Now using stats_map - NO DB CALLS HERE)
     summary_data = [
         ['Simulation Name:', simulation_data.get('Simulation_Name')],
         ['Created At:', simulation_data.get('Created_At')],
-        ['Duration(s):', duration/50],
-        ['Computational Time (s):', simulation_data.get('Computational_Time')],
-        ['Evacuees:', len(evacuees)],
-        ['Hazards:', len(hazards)],
+        ['Duration(s):', f"{current_stats['duration']:.2f}"],
+        ['Computational Time (s):', f"{simulation_data.get('Computational_Time', 0):.5f}"],
+        ['Evacuees:', current_stats['evacuees']],
+        ['Hazards:', current_stats['hazards']],
     ]
 
     table = Table(summary_data, colWidths=[200, 300])
@@ -222,104 +374,57 @@ def export_pdf(simulation_id):
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
         ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#EBF5FB')),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
     ]))
-
     story.append(table)
     story.append(Spacer(1, 20))
 
-    # 🧮 Add a graph (see below)
-    chart_buffer = generate_evacuee_chart(evacuees_routes)
+    # 📊 Page 1 Graph (Pass the pre-calculated stats)
+    # Note: You may need to adjust generate_evacuee_chart to accept these stats
+    chart_buffer = generate_evacuee_chart(current_stats['duration']) 
     story.append(Image(chart_buffer, width=5*inch, height=3*inch))
-    story.append(Spacer(1, 12))
     
-    evaluation_id = simulation_data.get('Evaluation_Id')
-    if evaluation_id is not None:
-         # 🏷️ Page 2 Title
-        story.append(Paragraph(
-            "High-Risk Session Analysis",
-            styles['Title']
-        ))
+    # 📑 Batch Analysis (Page 2)
+    if evaluation_id:
+        story.append(PageBreak())
+        story.append(Paragraph("High-Risk Session Analysis", styles['Title']))
         story.append(Spacer(1, 12))
 
-        # Fetch batch simulations
-        batch_simulations = get_simulations_by_evaluation(evaluation_id)
-
-        analysis_data = [['Simulation Name', 'Evacuees', 'Duration (s)', 'Computational Time (s)']]
-
+        analysis_data = [['Simulation Name', 'Evacuees', 'Duration (s)', 'Comp. Time (s)']]
+        
         for sim in batch_simulations:
-            evacuees = get_simulation_evacuees(sim['Simulation_Id'])
-            evacuee_count = len(evacuees)
-
-            max_steps = 0
-            for evacuee in evacuees:
-                route = get_evacuees_route(evacuee.get('Evacuee_Id'))
-                if route:
-                    max_steps = max(max_steps, len(route['route']))
-
-            # Convert steps → seconds
-            duration_seconds = max_steps / 50
-
-            # Format computational time
-            comp_time = round(sim['Computational_Time'], 5)
-
-            sim['Duration'] = duration_seconds
+            sid = sim['Simulation_Id']
+            s_stats = stats_map.get(sid, {'evacuees': 0, 'hazards': 0, 'duration': 0})
+            
+            # Store duration back in sim object for the risk calculation later
+            sim['Duration'] = s_stats['duration']
 
             analysis_data.append([
                 sim['Simulation_Name'],
-                evacuee_count,
-                f"{duration_seconds:.2f}",   # duration shown nicely
-                f"{comp_time:.5f}"
+                s_stats['evacuees'],
+                f"{s_stats['duration']:.2f}",
+                f"{round(sim.get('Computational_Time', 0), 5):.5f}"
             ])
 
-
-        analysis_table = Table(analysis_data, colWidths=[200, 120, 120])
+        analysis_table = Table(analysis_data, colWidths=[180, 80, 80, 100])
         analysis_table.setStyle(TableStyle([
             ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#D6EAF8')),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('ALIGN', (1, 1), (-1, -1), 'CENTER'),
         ]))
-
         story.append(analysis_table)
-        story.append(Spacer(1, 20))
 
         # 📊 Comparison Graph
         comparison_chart = generate_batch_comparison_chart(batch_simulations)
         story.append(Image(comparison_chart, width=5*inch, height=3*inch))
-        
-        # HIGH RISK SESSION
-        # Identify highest-risk simulation (longest duration)
-        highest_risk_sim = max(
-            batch_simulations,
-            key=lambda sim: sim.get('Duration', 0),
-            default=None
-        )
 
-        story.append(Spacer(1, 16))
-        story.append(Paragraph(
-            "High-Risk Session Summary",
-            styles['Heading2']
-        ))
-        story.append(Spacer(1, 8))
-        
+        # Identify High Risk
+        highest_risk_sim = max(batch_simulations, key=lambda x: x.get('Duration', 0), default=None)
         if highest_risk_sim:
-            risk_text = f"""
-            Among all simulations in this batch, 
-            <b>{highest_risk_sim['Simulation_Name']}</b> was identified as the 
-            <b>highest-risk session</b>. This simulation recorded the longest 
-            evacuation duration of <b>{highest_risk_sim['Duration']:.2f} seconds</b>, 
-            indicating slower evacuation performance and increased exposure to hazards.
-            """
-
+            risk_text = f"<b>{highest_risk_sim['Simulation_Name']}</b> was the highest-risk session with <b>{highest_risk_sim['Duration']:.2f}s</b>."
             story.append(Paragraph(risk_text, styles['BodyText']))
 
-
-        
-
-    # 📄 Build the document
+    # Finalize PDF
     doc.build(story)
     buffer.seek(0)
     return buffer

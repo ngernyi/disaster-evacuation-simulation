@@ -23,7 +23,7 @@ app.config['MICROSOFT_SCOPE'] = os.getenv("MICROSOFT_SCOPE", "User.Read")
 
 
 CORS(app, 
-     origins=["http://localhost:5501", "http://127.0.0.1:5501"], 
+     origins=["http://localhost:5501", "http://127.0.0.1:5501", "https://disaster-evacuation-simulation-web.onrender.com"], 
      supports_credentials=True)
 # cors = CORS(origins=["http://localhost:5501"],supports_credentials=True, resources={r"/api/*": {"origins": "*"}})
 # CORS(app)

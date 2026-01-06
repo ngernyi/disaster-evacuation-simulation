@@ -25,7 +25,7 @@ RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
 WORKDIR /app
 
 # Copy backend code
-COPY backend/ /app/
+COPY . /app/
 
 # Install Python dependencies
 RUN pip install --upgrade pip \

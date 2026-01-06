@@ -1,6 +1,35 @@
 from config.db import get_connection
 from datetime import datetime
 
+def get_batch_simulation_stats(evaluation_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    # This query calculates the Max steps (duration) for every simulation in the batch
+    # It also counts evacuees and hazards in one go
+    query = """
+        SELECT 
+            s.Simulation_Id,
+            (SELECT COUNT(*) FROM Evacuees WHERE Simulation_Id = s.Simulation_Id) as EvacueeCount,
+            (SELECT COUNT(*) FROM Hazards WHERE Simulation_Id = s.Simulation_Id) as HazardCount,
+            (SELECT MAX(Step_Order) FROM ROUTE_POINT rp 
+             JOIN Evacuees e ON rp.Evacuee_Id = e.evacuee_id 
+             WHERE e.simulation_id = s.Simulation_Id) as MaxSteps
+        FROM Simulation s
+        WHERE s.Evaluation_Id = ?
+    """
+    cursor.execute(query, (evaluation_id,))
+    rows = cursor.fetchall()
+    
+    stats_map = {}
+    for r in rows:
+        stats_map[r.Simulation_Id] = {
+            'evacuees': r.EvacueeCount,
+            'hazards': r.HazardCount,
+            'duration': (r.MaxSteps or 0) / 50
+        }
+    conn.close()
+    return stats_map
+    
 def get_all_evacuee_routes_batch(simulation_id):
     conn = get_connection()
     cursor = conn.cursor()

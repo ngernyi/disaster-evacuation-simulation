@@ -120,7 +120,7 @@
 import { playSimulation, pauseSimulation, setCurrentStep, handleControlButton, getIsPause, getCurrentStep } from "../map/mapSimulationPlaying.js";
 import { addEvacuee, addFire } from "../map/mapGraphics.js";
 import { closeMenu } from "../map/mapInteraction.js";
-
+import { API_BASE_URL, WEB_URL } from "../src/config.js";
 const evacueesGraphic = [];
 const fireGraphic = [];
 const evacueeMovement = [];
@@ -221,18 +221,18 @@ document.getElementById('stopBtn').addEventListener('click', () => {
     let params = new URLSearchParams(window.location.search);
     let simulation_id = params.get('simulationId');
     let userId = null;
-    fetch(`http://localhost:5000/get_simulation_user_id?simulation_id=${simulation_id}`, {
+    fetch(`${API_BASE_URL}/get_simulation_user_id?simulation_id=${simulation_id}`, {
         method: 'GET',
         credentials: 'include'
     })
     .then(response => response.json())
     .then(data => {
         userId = data.user_id;
-        window.location.href = 'http://localhost:5501/Code/frontend/html/simulationHistory.html?user_id=' + userId;
+        window.location.href = WEB_URL+'/frontend/html/simulationHistory.html?user_id=' + userId;
     })
     .catch(error => {
       console.error(error);
-      window.location.href = 'http://localhost:5501/Code/frontend/html/landingPage.html';
+      window.location.href = WEB_URL + '/frontend/html/landingPage.html';
   });
   
     
@@ -257,7 +257,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const params = new URLSearchParams(window.location.search);
     simulationId = params.get("simulationId");
     console.log(simulationId);
-    fetch(`http://localhost:5000/get_simulation_data?simulation_id=${simulationId}`, { 
+    fetch(`${API_BASE_URL}/get_simulation_data?simulation_id=${simulationId}`, { 
         method: 'GET',
         credentials: 'include'
     })
@@ -366,7 +366,7 @@ function regenerateSimulation(currentStep, hazardType, hazardPosition) {
   loadingElement.style.display = "flex";
   
   // call the backend to start the new simulation
-  fetch('http://localhost:5000/add_dynamic_hazards', {
+  fetch(API_BASE_URL+'/add_dynamic_hazards', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

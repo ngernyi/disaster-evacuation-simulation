@@ -1,3 +1,5 @@
+import { API_BASE_URL, WEB_URL } from "../src/config.js";
+
 // Arrays to store selected choices
 const days = JSON.parse(sessionStorage.getItem("days") || "[]");
 const sessions = JSON.parse(sessionStorage.getItem("sessions") || "[]");
@@ -65,7 +67,10 @@ document.getElementById("generateSimBtn").addEventListener("click", () => {
     sessionStorage.setItem("days", JSON.stringify(selectedDays));
     sessionStorage.setItem("sessions", JSON.stringify(selectedSessions));
 
-    window.location.href = 'http://localhost:5501/Code/frontend/html/landingPage.html';
+    // NEW: persist API base URL for subseque
+
+    // UPDATED: use centralized web URL
+    window.location.href = WEB_URL+'/frontend/html/landingPage.html';
 
 });
 function initializeSelections() {

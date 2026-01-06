@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "../src/config.js";
+
 // import arcgis modules
 require([
   "esri/WebScene",
@@ -86,12 +88,13 @@ require([
 
 document.getElementById("googleSignInButton").addEventListener("click", function() {
   // Redirect to Flask backend Google login route
-  window.location.href = "http://localhost:5000/login";
+  window.location.href = API_BASE_URL + "/login";
+  
 });
 
 document.getElementById("microsoftSignInButton").addEventListener("click", function() {
   // Redirect to Flask backend Google login route
-  window.location.href = "http://localhost:5000/login/microsoft";
+  window.location.href = API_BASE_URL + "/login/microsoft";
 });
 
 // fetch('http://127.0.0.1:5000/login/callback', { credentials: 'include' })

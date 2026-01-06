@@ -1,4 +1,4 @@
-
+import { API_BASE_URL, WEB_URL } from '../src/config.js';
 
 let listOfUsers = [];
 let listToShow = [];
@@ -7,7 +7,7 @@ let currentKeyword = '';
 
 window.onload = async function () {
   try {
-    const response = await fetch('http://localhost:5000/get_all_users', {
+    const response = await fetch(API_BASE_URL+'/get_all_users', {
       credentials: 'include',
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
@@ -16,7 +16,7 @@ window.onload = async function () {
     if (!response.ok) {
       // Handle non admin user
       if(response.status === 403){
-        window.location.href = "http://localhost:5501/Code/frontend/html/landingPage.html";
+        window.location.href = WEB_URL+"/frontend/html/landingPage.html";
       }
 
       throw new Error(`HTTP error! Status: ${response.status}`);
@@ -100,7 +100,7 @@ document.querySelectorAll('#sortDropdown li').forEach(item => {
 });
 
 function promote_user(user_id) {
-  fetch(`http://localhost:5000/promote_user`, {
+  fetch(API_BASE_URL+`/promote_user`, {
     credentials: 'include',
       method: 'POST',
       headers: {
@@ -125,7 +125,7 @@ function promote_user(user_id) {
 }
 
 function unpromote_user(user_id) {
-  fetch(`http://localhost:5000/unpromote_user`, {
+  fetch(API_BASE_URL+`/unpromote_user`, {
     credentials: 'include',
       method: 'POST',
       headers: {
@@ -151,7 +151,7 @@ function unpromote_user(user_id) {
 
 
 function ban_user(user_id) {
-  fetch(`http://localhost:5000/ban_user`, {
+  fetch(API_BASE_URL+`/ban_user`, {
       credentials: 'include',
       method: 'POST',
       headers: {
@@ -175,7 +175,7 @@ function ban_user(user_id) {
 }
 
 function unbanUser(user_id) {
-  fetch(`http://localhost:5000/unban_user`, {
+  fetch(API_BASE_URL+`/unban_user`, {
       credentials: 'include',
       method: 'POST',
       headers: {
@@ -306,7 +306,7 @@ function createUserItem(user) {
   viewBtn.textContent = 'View Simulations';
   viewBtn.addEventListener('click', () => {
     const user_id = user.id;
-    window.location.href = 'http://localhost:5501/Code/frontend/html/simulationHistory.html?user_id=' + user_id;
+    window.location.href = WEB_URL+'frontend/html/simulationHistory.html?user_id=' + user_id;
   });
 
   const number_of_simulations = document.createElement('p');
@@ -357,7 +357,7 @@ function showManageModal(user) {
 }
 
 function update_user_details(user_id, newEmail, newUsername) {
-  fetch(`http://localhost:5000/update_user_details`, {
+  fetch(`${API_BASE_URL}/update_user_details`, {
     credentials: 'include',
     method: 'POST',
     headers: {
@@ -384,7 +384,7 @@ function update_user_details(user_id, newEmail, newUsername) {
 }
 
 document.getElementById('genSimBtn').addEventListener('click', function() {
-  window.location.href = 'http://localhost:5501/Code/frontend/html/landingPage.html';
+  window.location.href = WEB_URL+'/frontend/html/landingPage.html';
 });
 
 

@@ -1,3 +1,5 @@
+import { API_BASE_URL, WEB_URL } from '../src/config.js';
+
 // declare global variables
 let listOfSimulations = [];
 let listToShow = [];
@@ -12,7 +14,7 @@ window.onload = function() {
     const params = new URLSearchParams(window.location.search);
     const userId = params.get('user_id');
 
-    let url = 'http://localhost:5000/get_user_simulations';
+    let url = API_BASE_URL + '/get_user_simulations';
     if (userId) {
         url += '?user_id=' + userId;
     }
@@ -162,7 +164,7 @@ function createSimulationItem(sim) {
     replayBtn.innerHTML = '<span class="play-icon"></span>Replay';
     replayBtn.addEventListener('click', () => {
         console.log(`Replay Simulation ID: ${sim.id}`);
-        window.location.href = "http://localhost:5501/Code/frontend/html/simulationPlaying.html?simulationId=" + sim.id;
+        window.location.href = WEB_URL+"/frontend/html/simulationPlaying.html?simulationId=" + sim.id;
 
     });
 
@@ -258,7 +260,7 @@ function showEvaluation(simItem, simId, simName) {
     const spinner = document.getElementById('loading-spinner');
     spinner.style.display = 'block'; // show spinner
     // fetch the data
-    fetch('http://localhost:5000/get_simulation_data?simulation_id='+simId, {
+    fetch(API_BASE_URL+'/get_simulation_data?simulation_id='+simId, {
         credentials: 'include',
         method: 'GET',
         headers: {
@@ -355,7 +357,7 @@ function downloadPdf(simId, simName) {
     btn.textContent = "Exporting...";
     btn.disabled = true;
 
-    fetch('http://localhost:5000/export_pdf?simulation_id=' + simId, {
+    fetch(API_BASE_URL+'/export_pdf?simulation_id=' + simId, {
         method: 'GET'
     })
         .then(response => {
@@ -389,7 +391,7 @@ function downloadCSV(simId, simName){
 
     btn.textContent = "Exporting...";
     btn.disabled = true;
-    fetch('http://localhost:5000/export_csv?simulation_id='+simId,  {
+    fetch(API_BASE_URL+'/export_csv?simulation_id='+simId,  {
      method: 'GET' 
     })
     .then(response => {
@@ -464,7 +466,7 @@ function renameSimulation(simItem, simId, simName){
 
     const confirmHandler = () => {
         const newName = renameInput.value;
-        fetch('http://localhost:5000/rename_simulation', {
+        fetch(API_BASE_URL+'/rename_simulation', {
             credentials: 'include',
             method: 'POST',
             headers: {
@@ -525,7 +527,7 @@ function deleteSimulation(simItem,simId, simName) {
         simItem.remove();
         console.log(`Deleted Simulation ID: ${simId}`);
         // update in database
-        fetch('http://localhost:5000/delete_simulation', {
+        fetch(API_BASE_URL+'/delete_simulation', {
             credentials: 'include',
             method: 'POST',
             headers: {
@@ -619,13 +621,13 @@ searchInput.addEventListener('input', function() {
 // Logout
 const logoutBtn = document.querySelector('.btn-secondary');
 logoutBtn.addEventListener('click', function() {
-    window.location.href = 'http://localhost:5000/logout';
+    window.location.href = WEB_URL+'/logout';
 });
 
 // Generate Simulation
 const generateSimulationBtn = document.querySelector('.btn-primary');
 generateSimulationBtn.addEventListener('click', function() {
-    window.location.href = 'http://localhost:5501/Code/frontend/html/landingPage.html';
+    window.location.href = WEB_URL+'/frontend/html/landingPage.html';
 });
 
 

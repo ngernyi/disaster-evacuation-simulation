@@ -1,5 +1,8 @@
 import { addFire , addEvacuee} from "../map/mapGraphics.js";
 import { closeMenu } from "../map/mapInteraction.js";
+import { API_BASE_URL } from "../src/config.js";
+import { WEB_URL } from "../src/config.js";
+
 window.lastClickedPoint = null;
 const days = JSON.parse(sessionStorage.getItem("days") || "[]");
 const sessions = JSON.parse(sessionStorage.getItem("sessions") || "[]");
@@ -100,7 +103,7 @@ document.addEventListener("DOMContentLoaded", function () {
   
   window.onload = function() {
     console.log("loadeddddddddddddddddddddddddddddddddddddddddddddddddddd");
-    fetch('http://localhost:5000/login/status', {
+    fetch(API_BASE_URL + '/login/status', {
         credentials: 'include' // Important: sends cookies (session)
     })
     .then(response => response.json())
@@ -132,15 +135,15 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
 document.getElementById('signInButton').addEventListener('click', function() {
-   window.location.href = 'http://localhost:5501/Code/frontend/html/login.html';
+   window.location.href = WEB_URL + '/frontend/html/login.html';
 });
 
 document.getElementById('historyButton').addEventListener('click', function() {
-    window.location.href = 'http://localhost:5501/Code/frontend/html/simulationHistory.html';
+    window.location.href = WEB_URL + '/frontend/html/simulationHistory.html';
 });
 
 document.getElementById('userManagementText').addEventListener('click', function() {
-  window.location.href = 'http://localhost:5501/Code/frontend/html/userManagement.html';
+  window.location.href = WEB_URL + '/frontend/html/userManagement.html';
 });
   
 const input = document.getElementById("customNameInput");
@@ -168,12 +171,11 @@ document.getElementById("customSimButton").addEventListener("click", function ()
   console.log(customSimData.simulationName);
     // Show loading modal
     document.getElementById("loadingModal").style.display = "flex";
-    fetch('http://localhost:5000/create_custom_sim', {
-      credentials: 'include', // Important: sends cookies (session)
+    // CHANGED: use API_BASE_URL for backend request
+    fetch(API_BASE_URL + '/create_custom_sim', {
+      credentials: 'include',
       method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(customSimData),
     })
     .then(response => response.json())
@@ -181,9 +183,7 @@ document.getElementById("customSimButton").addEventListener("click", function ()
       console.log(data);
       console.log(data.simulation_id);
         const simulationId = data.simulation_id;
-        window.location.href = "http://localhost:5501/Code/frontend/html/simulationPlaying.html?simulationId=" + simulationId;
-
-
+        window.location.href = WEB_URL + '/frontend/html/simulationPlaying.html?simulationId=' + simulationId;
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -191,7 +191,7 @@ document.getElementById("customSimButton").addEventListener("click", function ()
 });
 
 document.getElementById('sessionSelectButton').addEventListener('click', function() {
-  window.location.href = 'http://localhost:5501/Code/frontend/html/selectDayAndSession.html';
+  window.location.href = WEB_URL + '/frontend/html/selectDayAndSession.html';
 });
 
 document.getElementById('sessionSimButton').addEventListener('click', function() {
@@ -219,22 +219,16 @@ document.getElementById('sessionSimButton').addEventListener('click', function()
   sessionNameInput.placeholder = "Enter simulation name";
   // Show loading modal
   document.getElementById("loadingModal").style.display = "flex";
-    fetch('http://localhost:5000/create_session_sim', {
-      credentials: 'include', // Important: sends cookies (session)
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(sessionSimData),
-    })
-    .then(response => response.json())
-    .then(data => {
-      // console.log(data);
-      // console.log(data.simulation_id);
-        // const simulationId = data.simulation_id;
-        window.location.href = "http://localhost:5501/Code/frontend/html/simulationHistory.html";
-
-
+  // CHANGED: use API_BASE_URL for backend request
+  fetch(API_BASE_URL + '/create_session_sim', {
+    credentials: 'include',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(sessionSimData),
+  })
+  .then(response => response.json())
+  .then(data => {
+        window.location.href = WEB_URL + '/frontend/html/simulationHistory.html';
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -248,12 +242,11 @@ document.getElementById('addConfigButton').addEventListener('click', function(ev
     sessions: sessions,
   };
 
-  fetch('http://localhost:5000/create_config', {
-    credentials: 'include', // Important: sends cookies (session)
+  // CHANGED: use API_BASE_URL for backend request
+  fetch(API_BASE_URL + '/create_config', {
+    credentials: 'include',
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(configuration),
   })
     .then(response => response.json())

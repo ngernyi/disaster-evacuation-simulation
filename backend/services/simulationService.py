@@ -1,6 +1,42 @@
 from config.db import get_connection
 from datetime import datetime
 
+def get_all_evacuee_routes_batch(simulation_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    # We JOIN Route_Point with Evacuees to get all points for this Simulation_Id at once
+    query = """
+        SELECT RP.Route_Point_Id, RP.Evacuee_Id, RP.Latitude, RP.Longitude, RP.Z, RP.Step_Order
+        FROM ROUTE_POINT RP
+        JOIN Evacuees E ON RP.Evacuee_Id = E.evacuee_id
+        WHERE E.simulation_id = ?
+        ORDER BY RP.Evacuee_Id, RP.Step_Order
+    """
+    
+    cursor.execute(query, (simulation_id,))
+    rows = cursor.fetchall()
+    
+    # We organize the flat rows into the nested dictionary format your frontend expects
+    # Format: { evac_id: { 'route': [...] } }
+    routes_map = {}
+    for row in rows:
+        e_id = row.Evacuee_Id
+        if e_id not in routes_map:
+            routes_map[e_id] = {'route': []}
+            
+        routes_map[e_id]['route'].append({
+            'Route_Point_Id': row.Route_Point_Id,
+            'Evacuee_Id': row.Evacuee_Id,
+            'Latitude': row.Latitude,
+            'Longitude': row.Longitude,
+            'Z': row.Z,
+            'Step_Order': row.Step_Order,
+        })
+    
+    cursor.close()
+    conn.close()
+    return routes_map
 
 def get_simulation_metadata(simulation_id):
     conn = get_connection()

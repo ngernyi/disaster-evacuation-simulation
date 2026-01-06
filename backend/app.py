@@ -11,6 +11,10 @@ import pyodbc
 
 load_dotenv()
 
+if os.getenv("FLASK_ENV") != "development":
+    sys.stdout = open(os.devnull, 'w')
+    sys.stderr = open(os.devnull, 'w')
+
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 app.config['GOOGLE_CLIENT_ID'] = os.getenv("GOOGLE_CLIENT_ID")

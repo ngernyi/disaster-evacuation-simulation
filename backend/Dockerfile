@@ -3,7 +3,7 @@ FROM python:3.10-slim
 WORKDIR /app
 
 # Copy backend code
-COPY . /app/
+COPY .. /app/
 
 # Install dependencies for ODBC
 RUN apt-get update && apt-get install -y \

@@ -39,6 +39,19 @@ app.register_blueprint(admin_blueprint)
 def index():
     return jsonify({"message": "Backend is running."})
 
+# for testing db connection
+@app.route('/test-db')
+def test_db():
+    conn_str = os.environ.get('SQL_CONNECTION_STRING')
+    try:
+        conn = pyodbc.connect(conn_str, timeout=5)
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1")
+        result = cursor.fetchone()
+        return f"✅ DB connection works! Query result: {result}"
+    except Exception as e:
+        return f"❌ DB connection failed: {e}"
+
 # if __name__ == "__main__":
 #     app.run(debug=True)
     

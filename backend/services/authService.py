@@ -10,7 +10,8 @@ from flask import request
 from flask import current_app
 import os
 
-frontend_url = "http://localhost:5501/Code"
+# frontend_url = "http://localhost:5501/Code/frontend"
+frontend_url = "https://disaster-evacuation-simulation-web.onrender.com"
 
 def microsoft_login():
     client_id = os.getenv("MICROSOFT_CLIENT_ID")
@@ -63,8 +64,8 @@ def microsoft_callback():
         else:
             if get_user_roles(session['user_info']['id']).rstrip() == 'Banned':
                 session.clear()
-                return redirect(frontend_url + '/frontend/auth/banned.html')
-        return redirect(frontend_url + '/frontend/html/landingPage.html')
+                return redirect(frontend_url + '/auth/banned.html')
+        return redirect(frontend_url + '/html/landingPage.html')
     else:
         print("Error during Microsoft login:", result.get("error_description"))
         return jsonify(result)
@@ -115,11 +116,11 @@ def google_callback():
 
             session.clear()  # Clear all session data
             print("Logged outttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt")
-            return redirect(frontend_url+'/frontend/auth/banned.html')
+            return redirect(frontend_url+'/auth/banned.html')
         
         
     print("Not banned")
-    return redirect(frontend_url+'frontend/html/landingPage.html')
+    return redirect(frontend_url+'/html/landingPage.html')
 
 
 def check_user_existence_in_db(user_info):
@@ -156,7 +157,7 @@ def logout():
             print(f'Failed to revoke token: {revoke.status_code}')
 
     session.clear()  # Clear all session data
-    return redirect(frontend_url+'/frontend/html/landingPage.html')
+    return redirect(frontend_url+'/html/landingPage.html')
 
 
 def set_google_tokengetter(google):

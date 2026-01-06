@@ -11,7 +11,7 @@ from utils.AStarAlgo import A_star
 from utils.pathFindingWithNodes import compute_path_in_skeleton_map
 from utils.GridNavMeshPathFindingFunnel import navMeshPathWithFunnel
 # from utils.navMeshPolygons import rectanglePathFindings
-from utils.rvoImplement import runRVO
+# from utils.rvoImplement import runRVO
 from utils.hazardHandler import add_hazard_to_nav_mesh
 from utils.multiFloorRVO import runMultiFloorRVO
 from utils.mapConverter import *

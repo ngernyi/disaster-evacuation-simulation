@@ -13,75 +13,134 @@ import csv
 from datetime import datetime
 from services.simulationService import *
 
-def export_csv(simulation_id):
-    # Fetch data
-    simulation_data = get_simulation_metadata(simulation_id)
-    evaluation_id = simulation_data.get('Evaluation_Id')
+import io
+import csv
 
-    # Prepare CSV fieldnames
+def export_csv(simulation_id):
+    # 1. Initial Fetch
+    simulation_data = get_simulation_metadata(simulation_id)
+    if not simulation_data:
+        return None
+
+    evaluation_id = simulation_data.get('Evaluation_Id')
     fieldnames = ['Simulation Name', 'Created At', 'Status', 'Computational Time',
                   'Evacuees', 'Hazards', 'Duration', 'High Risk']
+    data_rows = []
 
-    data = []
-
+    # 2. Determine which simulations to process
     if evaluation_id:
-        # Batch simulations
-        batch_simulations = get_simulations_by_evaluation(evaluation_id)
-
-        # Compute duration for each
-        for sim in batch_simulations:
-            evacuees_routes = [
-                len(get_evacuees_route(e.get('Evacuee_Id'))['route']) if get_evacuees_route(e.get('Evacuee_Id')) else 0
-                for e in get_simulation_evacuees(sim['Simulation_Id'])
-            ]
-            sim['Duration_sec'] = max(evacuees_routes, default=0) / 50
-
-        # Find highest-risk simulation
-        highest_risk_sim = max(batch_simulations, key=lambda x: x['Duration_sec'], default=None)
-
-        # Add batch rows
-        for sim in batch_simulations:
-            data.append({
-                'Simulation Name': sim['Simulation_Name'],
-                'Created At': sim['Created_At'],
-                'Status': sim['Status'],
-                'Computational Time': round(sim['Computational_Time'], 5),
-                'Evacuees': len(get_simulation_evacuees(sim['Simulation_Id'])),
-                'Hazards': len(get_simulation_hazards(sim['Simulation_Id'])),
-                'Duration': sim['Duration_sec'],
-                'High Risk': 'Yes' if sim['Simulation_Id'] == highest_risk_sim['Simulation_Id'] else ''
-            })
+        # It's a batch
+        simulations_to_process = get_simulations_by_evaluation(evaluation_id)
     else:
-        # Single simulation
-        evacuees = get_simulation_evacuees(simulation_id)
-        hazards = get_simulation_hazards(simulation_id)
-        evacuees_routes = [
-            len(get_evacuees_route(e.get('Evacuee_Id'))['route']) if get_evacuees_route(e.get('Evacuee_Id')) else 0
-            for e in evacuees
-        ]
-        duration = max(evacuees_routes, default=0) / 50
-        data.append({
-            'Simulation Name': simulation_data.get('Simulation_Name'),
-            'Created At': simulation_data.get('Created_At'),
-            'Status': simulation_data.get('Status'),
-            'Computational Time': round(simulation_data.get('Computational_Time',0), 5),
-            'Evacuees': len(evacuees),
-            'Hazards': len(hazards),
-            'Duration': duration,
-            'High Risk': ''
+        # It's just one
+        simulations_to_process = [simulation_data]
+
+    # 3. Get all IDs and fetch stats in ONE batch trip
+    sim_ids = [s['Simulation_Id'] for s in simulations_to_process]
+    stats_map = get_export_stats_batch(sim_ids)
+
+    # 4. Identify High Risk (Highest Duration)
+    highest_risk_id = None
+    if stats_map:
+        highest_risk_id = max(stats_map, key=lambda k: stats_map[k]['duration'])
+
+    # 5. Build the data rows using the stats_map (No more DB calls in this loop!)
+    for sim in simulations_to_process:
+        sid = sim['Simulation_Id']
+        stats = stats_map.get(sid, {'evacuees': 0, 'hazards': 0, 'duration': 0})
+        
+        data_rows.append({
+            'Simulation Name': sim['Simulation_Name'],
+            'Created At': sim['Created_At'],
+            'Status': sim['Status'],
+            'Computational Time': round(float(sim.get('Computational_Time') or 0), 5),
+            'Evacuees': stats['evacuees'],
+            'Hazards': stats['hazards'],
+            'Duration': stats['duration'],
+            'High Risk': 'Yes' if (evaluation_id and sid == highest_risk_id) else ''
         })
 
-    # Create CSV in memory
+    # 6. Create CSV in memory (Best for Render)
     output = io.StringIO()
     writer = csv.DictWriter(output, fieldnames=fieldnames)
     writer.writeheader()
-    writer.writerows(data)
+    writer.writerows(data_rows)
 
-    # Convert to BytesIO for Flask send_file
+    # Convert to bytes for Flask response
     mem = io.BytesIO()
     mem.write(output.getvalue().encode('utf-8'))
     mem.seek(0)
+    
     return mem
+# def export_csv(simulation_id):
+#     # Fetch data
+#     simulation_data = get_simulation_metadata(simulation_id)
+#     evaluation_id = simulation_data.get('Evaluation_Id')
+
+#     # Prepare CSV fieldnames
+#     fieldnames = ['Simulation Name', 'Created At', 'Status', 'Computational Time',
+#                   'Evacuees', 'Hazards', 'Duration', 'High Risk']
+
+#     data = []
+
+#     if evaluation_id:
+#         # Batch simulations
+#         batch_simulations = get_simulations_by_evaluation(evaluation_id)
+
+#         # Compute duration for each
+#         for sim in batch_simulations:
+#             evacuees_routes = [
+#                 len(get_evacuees_route(e.get('Evacuee_Id'))['route']) if get_evacuees_route(e.get('Evacuee_Id')) else 0
+#                 for e in get_simulation_evacuees(sim['Simulation_Id'])
+#             ]
+#             sim['Duration_sec'] = max(evacuees_routes, default=0) / 50
+
+#         # Find highest-risk simulation
+#         highest_risk_sim = max(batch_simulations, key=lambda x: x['Duration_sec'], default=None)
+
+#         # Add batch rows
+#         for sim in batch_simulations:
+#             data.append({
+#                 'Simulation Name': sim['Simulation_Name'],
+#                 'Created At': sim['Created_At'],
+#                 'Status': sim['Status'],
+#                 'Computational Time': round(sim['Computational_Time'], 5),
+#                 'Evacuees': len(get_simulation_evacuees(sim['Simulation_Id'])),
+#                 'Hazards': len(get_simulation_hazards(sim['Simulation_Id'])),
+#                 'Duration': sim['Duration_sec'],
+#                 'High Risk': 'Yes' if sim['Simulation_Id'] == highest_risk_sim['Simulation_Id'] else ''
+#             })
+#     else:
+#         # Single simulation
+#         evacuees = get_simulation_evacuees(simulation_id)
+#         hazards = get_simulation_hazards(simulation_id)
+#         evacuees_routes = [
+#             len(get_evacuees_route(e.get('Evacuee_Id'))['route']) if get_evacuees_route(e.get('Evacuee_Id')) else 0
+#             for e in evacuees
+#         ]
+#         duration = max(evacuees_routes, default=0) / 50
+#         data.append({
+#             'Simulation Name': simulation_data.get('Simulation_Name'),
+#             'Created At': simulation_data.get('Created_At'),
+#             'Status': simulation_data.get('Status'),
+#             'Computational Time': round(simulation_data.get('Computational_Time',0), 5),
+#             'Evacuees': len(evacuees),
+#             'Hazards': len(hazards),
+#             'Duration': duration,
+#             'High Risk': ''
+#         })
+
+#     # Create CSV in memory
+#     output = io.StringIO()
+#     writer = csv.DictWriter(output, fieldnames=fieldnames)
+#     writer.writeheader()
+#     writer.writerows(data)
+
+#     # Convert to BytesIO for Flask send_file
+#     mem = io.BytesIO()
+#     mem.write(output.getvalue().encode('utf-8'))
+#     mem.seek(0)
+#     return mem
 
 
 # def export_pdf(simulation_id):

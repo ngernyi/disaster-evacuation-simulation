@@ -235,28 +235,28 @@ document.getElementById('sessionSimButton').addEventListener('click', function()
     });
 });
 
-document.getElementById('addConfigButton').addEventListener('click', function(event) {
-  const configuration = {
-    evacuees: evacuuesAdded,
-    days: days,
-    sessions: sessions,
-  };
+// document.getElementById('addConfigButton').addEventListener('click', function(event) {
+//   const configuration = {
+//     evacuees: evacuuesAdded,
+//     days: days,
+//     sessions: sessions,
+//   };
 
-  // CHANGED: use API_BASE_URL for backend request
-  fetch(API_BASE_URL + '/create_config', {
-    credentials: 'include',
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(configuration),
-  })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      // console.log(data.config_id);
-      // const configId = data.config_id;
-      // window.location.href = "http://localhost:5501/Code/frontend/html/simulationPlaying.html?configId=" + configId;
-    })
-    .catch((error) => {
-      console.error('Error:', error);
-    });
-});
+//   // CHANGED: use API_BASE_URL for backend request
+//   fetch(API_BASE_URL + '/create_config', {
+//     credentials: 'include',
+//     method: 'POST',
+//     headers: { 'Content-Type': 'application/json' },
+//     body: JSON.stringify(configuration),
+//   })
+//     .then(response => response.json())
+//     .then(data => {
+//       console.log(data);
+//       // console.log(data.config_id);
+//       // const configId = data.config_id;
+//       // window.location.href = "http://localhost:5501/Code/frontend/html/simulationPlaying.html?configId=" + configId;
+//     })
+//     .catch((error) => {
+//       console.error('Error:', error);
+//     });
+// });

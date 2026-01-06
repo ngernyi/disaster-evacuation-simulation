@@ -36,6 +36,12 @@ app.register_blueprint(auth_blueprint)
 app.register_blueprint(sim_blueprint)
 app.register_blueprint(admin_blueprint)
 
+
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_SAMESITE="None"
+)
+
 @app.route("/")
 def index():
     return jsonify({"message": "Backend is running."})

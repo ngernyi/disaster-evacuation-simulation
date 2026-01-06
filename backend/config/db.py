@@ -25,6 +25,9 @@ connection_string = (
     f"TrustServerCertificate=yes;"
 )
 
+# for hosting
+conn_str = os.environ.get('SQL_CONNECTION_STRING')
+
 
 def get_connection():
-    return pyodbc.connect(connection_string)
+    return pyodbc.connect(conn_str)

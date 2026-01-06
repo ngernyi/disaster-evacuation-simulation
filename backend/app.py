@@ -7,6 +7,7 @@ from route.userManagementRoute import admin_blueprint
 from config.oauth import configure_google_oauth
 from services.authService import set_google_tokengetter
 from flask_cors import CORS
+import pyodbc
 
 load_dotenv()
 

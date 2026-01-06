@@ -621,7 +621,7 @@ searchInput.addEventListener('input', function() {
 // Logout
 const logoutBtn = document.querySelector('.btn-secondary');
 logoutBtn.addEventListener('click', function() {
-    window.location.href = WEB_URL+'/html/logout';
+    window.location.href = API_BASE_URL+'/logout';
 });
 
 // Generate Simulation

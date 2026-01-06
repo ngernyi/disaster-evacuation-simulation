@@ -436,24 +436,32 @@ def export_csv_route():
         as_attachment=True,
         download_name='simulation_report.pdf'  # For Flask 2.x
     )
-    
+
 @sim_blueprint.route('/get_simulation_data', methods=['GET'])
 def get_simulation_data_route():
     simulation_id = request.args.get('simulation_id', type=int)
     print("sim id from get simulation", simulation_id)
+    
+    # 1. Get standard metadata
     simulation_metadata = get_simulation_metadata(simulation_id)
     evacuees = get_simulation_evacuees(simulation_id)
     hazards = get_simulation_hazards(simulation_id)
 
-    # print("evacuees", evacuees)
+    # 2. Get ALL routes in ONE trip to the database
+    all_routes_data = get_all_evacuee_routes_batch(simulation_id)
+
+    # 3. Match the routes to the evacuees list to maintain your exact return format
     evacuees_routes = []
     for evacuee in evacuees:
-        evacuee_id = evacuee.get('Evacuee_Id')
-        evacuee_route = get_evacuees_route(evacuee_id)
-        if evacuee_route:
-            evacuees_routes.append(evacuee_route)
+        evac_id = evacuee.get('Evacuee_Id')
+        # Get the route from our pre-fetched dictionary (Lightning fast RAM access)
+        route_data = all_routes_data.get(evac_id)
+        if route_data:
+            evacuees_routes.append(route_data)
+        else:
+            # Maintain consistency even if an evacuee has no route
+            evacuees_routes.append({'route': []})
 
-    
     return jsonify({
         'success': True,
         'simulation_metadata': simulation_metadata,
@@ -461,6 +469,31 @@ def get_simulation_data_route():
         'hazards': hazards,
         'evacuees_routes': evacuees_routes
     })
+    
+# @sim_blueprint.route('/get_simulation_data', methods=['GET'])
+# def get_simulation_data_route():
+#     simulation_id = request.args.get('simulation_id', type=int)
+#     print("sim id from get simulation", simulation_id)
+#     simulation_metadata = get_simulation_metadata(simulation_id)
+#     evacuees = get_simulation_evacuees(simulation_id)
+#     hazards = get_simulation_hazards(simulation_id)
+
+#     # print("evacuees", evacuees)
+#     evacuees_routes = []
+#     for evacuee in evacuees:
+#         evacuee_id = evacuee.get('Evacuee_Id')
+#         evacuee_route = get_evacuees_route(evacuee_id)
+#         if evacuee_route:
+#             evacuees_routes.append(evacuee_route)
+
+    
+#     return jsonify({
+#         'success': True,
+#         'simulation_metadata': simulation_metadata,
+#         'evacuees': evacuees,
+#         'hazards': hazards,
+#         'evacuees_routes': evacuees_routes
+#     })
     
 
 @sim_blueprint.route('/get_simulation_user_id', methods=['GET'])

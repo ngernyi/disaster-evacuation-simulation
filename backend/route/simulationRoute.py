@@ -408,20 +408,26 @@ def rename_simulation_route():
         print(e)
         return jsonify({'success': False,'message': 'Database error'}), 500
     
-@sim_blueprint.route('/export_pdf', methods=['GET'])
+import traceback
+
+@sim_blueprint.route('/export_pdf')
 def export_pdf_route():
-    print("reached export pdf route")
-    simulation_id = request.args.get('simulation_id') 
-    print("sim id from export pdf", simulation_id)
-    pdf_buffer = export_pdf(simulation_id)
-    
-    # send_file properly handles in-memory file responses
-    return send_file(
-        pdf_buffer,
-        mimetype='application/pdf',
-        as_attachment=True,
-        download_name='simulation_report.pdf'  
-    )
+    try:
+        simulation_id = request.args.get('simulation_id', type=int)
+        
+        # Call the function
+        pdf_buffer = export_pdf(simulation_id)
+        
+        return send_file(
+            pdf_buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'Report_{simulation_id}.pdf'
+        )
+    except Exception as e:
+        # This will catch the EXACT error and print it to your screen
+        error_info = traceback.format_exc()
+        return f"<h1>Debug Error Info:</h1><pre>{error_info}</pre>", 500
     
 @sim_blueprint.route('/export_csv', methods=['GET'])
 def export_csv_route():

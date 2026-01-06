@@ -9,6 +9,7 @@ from config.oauth import configure_google_oauth
 from services.authService import set_google_tokengetter
 from flask_cors import CORS
 import pyodbc
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 load_dotenv()
 
@@ -17,6 +18,7 @@ if os.getenv("FLASK_ENV") != "development":
     sys.stderr = open(os.devnull, 'w')
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 app.config['GOOGLE_CLIENT_ID'] = os.getenv("GOOGLE_CLIENT_ID")
 app.config['GOOGLE_CLIENT_SECRET'] = os.getenv("GOOGLE_CLIENT_SECRET")

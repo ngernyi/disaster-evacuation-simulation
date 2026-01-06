@@ -16,7 +16,7 @@ window.onload = async function () {
     if (!response.ok) {
       // Handle non admin user
       if(response.status === 403){
-        window.location.href = WEB_URL+"/frontend/html/landingPage.html";
+        window.location.href = WEB_URL+"/html/landingPage.html";
       }
 
       throw new Error(`HTTP error! Status: ${response.status}`);
@@ -306,7 +306,7 @@ function createUserItem(user) {
   viewBtn.textContent = 'View Simulations';
   viewBtn.addEventListener('click', () => {
     const user_id = user.id;
-    window.location.href = WEB_URL+'frontend/html/simulationHistory.html?user_id=' + user_id;
+    window.location.href = WEB_URL+'/html/simulationHistory.html?user_id=' + user_id;
   });
 
   const number_of_simulations = document.createElement('p');
@@ -384,7 +384,7 @@ function update_user_details(user_id, newEmail, newUsername) {
 }
 
 document.getElementById('genSimBtn').addEventListener('click', function() {
-  window.location.href = WEB_URL+'/frontend/html/landingPage.html';
+  window.location.href = WEB_URL+'/html/landingPage.html';
 });
 
 

@@ -228,11 +228,11 @@ document.getElementById('stopBtn').addEventListener('click', () => {
     .then(response => response.json())
     .then(data => {
         userId = data.user_id;
-        window.location.href = WEB_URL+'/frontend/html/simulationHistory.html?user_id=' + userId;
+        window.location.href = WEB_URL+'/html/simulationHistory.html?user_id=' + userId;
     })
     .catch(error => {
       console.error(error);
-      window.location.href = WEB_URL + '/frontend/html/landingPage.html';
+      window.location.href = WEB_URL + '/html/landingPage.html';
   });
   
     

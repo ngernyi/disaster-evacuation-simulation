@@ -164,7 +164,7 @@ function createSimulationItem(sim) {
     replayBtn.innerHTML = '<span class="play-icon"></span>Replay';
     replayBtn.addEventListener('click', () => {
         console.log(`Replay Simulation ID: ${sim.id}`);
-        window.location.href = WEB_URL+"/frontend/html/simulationPlaying.html?simulationId=" + sim.id;
+        window.location.href = WEB_URL+"/html/simulationPlaying.html?simulationId=" + sim.id;
 
     });
 
@@ -627,7 +627,7 @@ logoutBtn.addEventListener('click', function() {
 // Generate Simulation
 const generateSimulationBtn = document.querySelector('.btn-primary');
 generateSimulationBtn.addEventListener('click', function() {
-    window.location.href = WEB_URL+'/frontend/html/landingPage.html';
+    window.location.href = WEB_URL+'/html/landingPage.html';
 });
 
 

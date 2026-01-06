@@ -135,15 +135,15 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
 document.getElementById('signInButton').addEventListener('click', function() {
-   window.location.href = WEB_URL + '/frontend/html/login.html';
+   window.location.href = WEB_URL + '/html/login.html';
 });
 
 document.getElementById('historyButton').addEventListener('click', function() {
-    window.location.href = WEB_URL + '/frontend/html/simulationHistory.html';
+    window.location.href = WEB_URL + '/html/simulationHistory.html';
 });
 
 document.getElementById('userManagementText').addEventListener('click', function() {
-  window.location.href = WEB_URL + '/frontend/html/userManagement.html';
+  window.location.href = WEB_URL + '/html/userManagement.html';
 });
   
 const input = document.getElementById("customNameInput");
@@ -183,7 +183,7 @@ document.getElementById("customSimButton").addEventListener("click", function ()
       console.log(data);
       console.log(data.simulation_id);
         const simulationId = data.simulation_id;
-        window.location.href = WEB_URL + '/frontend/html/simulationPlaying.html?simulationId=' + simulationId;
+        window.location.href = WEB_URL + '/html/simulationPlaying.html?simulationId=' + simulationId;
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -191,7 +191,7 @@ document.getElementById("customSimButton").addEventListener("click", function ()
 });
 
 document.getElementById('sessionSelectButton').addEventListener('click', function() {
-  window.location.href = WEB_URL + '/frontend/html/selectDayAndSession.html';
+  window.location.href = WEB_URL + '/html/selectDayAndSession.html';
 });
 
 document.getElementById('sessionSimButton').addEventListener('click', function() {
@@ -228,7 +228,7 @@ document.getElementById('sessionSimButton').addEventListener('click', function()
   })
   .then(response => response.json())
   .then(data => {
-        window.location.href = WEB_URL + '/frontend/html/simulationHistory.html';
+        window.location.href = WEB_URL + '/html/simulationHistory.html';
     })
     .catch((error) => {
         console.error('Error:', error);

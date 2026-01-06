@@ -70,7 +70,7 @@ document.getElementById("generateSimBtn").addEventListener("click", () => {
     // NEW: persist API base URL for subseque
 
     // UPDATED: use centralized web URL
-    window.location.href = WEB_URL+'/frontend/html/landingPage.html';
+    window.location.href = WEB_URL+'/html/landingPage.html';
 
 });
 function initializeSelections() {

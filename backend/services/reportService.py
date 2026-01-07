@@ -417,45 +417,36 @@ def generate_evacuee_chart(evacuees_routes, steps_per_second=50):
     if not evacuees_routes:
         return None
 
-    max_step = max(evacuees_routes)
-
-    # Count evacuees finishing at each step
-    finished_at = [0] * (max_step + 1)
-    for step in evacuees_routes:
-        finished_at[step] += 1
-
-    # Build cumulative escaped count
-    evacuees_escaped = []
-    cumulative = 0
-    for i in range(max_step + 1):
-        cumulative += finished_at[i]
-        evacuees_escaped.append(cumulative)
-
-    time_seconds = []
-    escaped_sampled = []
-
-    # Sample every full second
-    for step in range(0, max_step + 1, steps_per_second):
+    # 1. Sort the routes (This is much faster than creating a list of 30,000 zeros)
+    sorted_steps = sorted(evacuees_routes)
+    total_evacuees = len(sorted_steps)
+    
+    # 2. Build time and count arrays
+    # We start at time 0 with 0 people escaped
+    time_seconds = [0]
+    escaped_sampled = [0]
+    
+    count = 0
+    for step in sorted_steps:
+        count += 1
         time_seconds.append(step / steps_per_second)
-        escaped_sampled.append(evacuees_escaped[step])
+        escaped_sampled.append(count)
 
-    # ✅ Ensure final partial second is included
-    if max_step % steps_per_second != 0:
-        time_seconds.append(max_step / steps_per_second)
-        escaped_sampled.append(evacuees_escaped[-1])
-
-    # Plot
+    # 3. Plotting (Optimized for speed)
+    # Use 'drawstyle' to make it a step-chart, which looks more professional for evacuation
     fig, ax = plt.subplots(figsize=(6, 4))
-    ax.plot(time_seconds, escaped_sampled, marker='o', linewidth=2)
+    ax.step(time_seconds, escaped_sampled, where='post', linewidth=2, color='#2E86C1')
 
     ax.set_title("Evacuation Progress Over Time")
     ax.set_xlabel("Time (seconds)")
     ax.set_ylabel("Number of Evacuees Escaped")
+    ax.set_ylim(0, total_evacuees + 1) # Ensure Y axis looks clean
     ax.grid(True, linestyle='--', alpha=0.6)
 
+    # Save to buffer
     buffer = io.BytesIO()
     plt.tight_layout()
-    plt.savefig(buffer, format="PNG")
+    plt.savefig(buffer, format="PNG", dpi=100) # Lower DPI saves processing time
     plt.close(fig)
     buffer.seek(0)
 

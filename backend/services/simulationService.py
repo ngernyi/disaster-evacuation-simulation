@@ -1,15 +1,15 @@
 from config.db import get_connection
 from datetime import datetime
 
-def get_export_stats_batch(simulation_ids):
+def get_export_stats_batch(simulation_ids, target_sim_id=None):
     if not simulation_ids:
-        return {}
+        return {}, []
     
     conn = get_connection()
     cursor = conn.cursor()
-    
-    # Use tuple for the IN clause
     placeholders = ','.join(['?'] * len(simulation_ids))
+    
+    # 1. Get Batch Stats (Used by both CSV and PDF)
     query = f"""
         SELECT 
             s.Simulation_Id,
@@ -22,23 +22,35 @@ def get_export_stats_batch(simulation_ids):
         WHERE s.Simulation_Id IN ({placeholders})
     """
     
+    stats_map = {}
+    individual_routes = []
+    
     try:
         cursor.execute(query, tuple(simulation_ids))
         rows = cursor.fetchall()
         
-        stats_map = {}
         for r in rows:
-            # Using index [0], [1] is safer across different ODBC drivers
-            sim_id = r[0]
-            stats_map[sim_id] = {
+            sid = r[0]
+            stats_map[sid] = {
                 'evacuees': r[1] if r[1] else 0,
                 'hazards': r[2] if r[2] else 0,
-                'duration': (r[3] if r[3] else 0) / 50
+                'duration': (r[3] if r[3] else 0) / 50,
+                'max_steps': r[3] if r[3] else 0
             }
-        return stats_map
-    except Exception as e:
-        print(f"DATABASE ERROR IN BATCH STATS: {e}")
-        return {}
+
+        # 2. Get individual stats ONLY if PDF requested them
+        if target_sim_id:
+            cursor.execute("""
+                SELECT MAX(Step_Order) 
+                FROM ROUTE_POINT rp
+                JOIN Evacuees e ON rp.Evacuee_Id = e.evacuee_id
+                WHERE e.simulation_id = ?
+                GROUP BY e.evacuee_id
+            """, (target_sim_id,))
+            individual_routes = [row[0] for row in cursor.fetchall() if row[0] is not None]
+
+        return stats_map, individual_routes
+
     finally:
         cursor.close()
         conn.close()

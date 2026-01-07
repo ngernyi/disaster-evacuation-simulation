@@ -332,6 +332,21 @@ document.getElementById('addFireBtn').addEventListener('click', () => {
   closeMenu();
 });
 
+document.getElementById('addCollapseBtn').addEventListener('click', () => {
+  const { longitude, latitude, z } = window.lastClickedPoint;
+  pendingPoint = { longitude, latitude, z };
+  isPaused = getIsPause();
+  // ask user for confirmation
+  document.getElementById('confirmAddingMenuId').style.display = 'block';
+  pauseSimulation();
+
+  // const confirmAddBtn = document.getElementById('confirmAddBtn');
+  // const cancelAddBtn = document.getElementById('cancelAddBtn');
+
+  // window.lastClickedPoint = null;
+  closeMenu();
+});
+
 confirmAddBtn.addEventListener('click', () => {
   // const { longitude, latitude, z } = window.lastClickedPoint;
   console.log(pendingPoint.longitude, pendingPoint.latitude, pendingPoint.z);

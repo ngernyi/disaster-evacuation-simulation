@@ -6,53 +6,48 @@ from utils.multiFloorRVO import *
 def regenerate_simulation(simulation_id, current_step, hazard_type, hazard_position):
     
     """
-        Get the evacuees and hazards position at the current step
+    Optimized: Gets all evacuees and hazards position in batch
     """
-    # Get the list of evacuees id of the simulation
+    # 1. Get simulation evacuees (1 DB call)
     simulation_evacuees = get_simulation_evacuees(simulation_id)
-    evacuees_id_list = []
-    for evacuee in simulation_evacuees:
-        evacuees_id_list.append(evacuee.get('Evacuee_Id'))
+    evacuee_ids = [e.get('Evacuee_Id') for e in simulation_evacuees]
     
-    # Get the list of evacuees position at the current step
-    evacuees_position_list = []
-    for evacuee_id in evacuees_id_list:
-        current_evacuees = get_evacuees_position(evacuee_id, current_step)
-        if current_evacuees is None:
-            evacuees_position_list.append(None)
-        else :
-            evacuees_position_list.append(get_evacuees_position(evacuee_id, current_step))   
+    # 2. Get ALL evacuee positions at once (1 DB call)
+    position_map = get_batch_evacuee_positions(evacuee_ids, current_step)
     
-    # Merge the evacuees id and position
+    # 3. Merge IDs and positions from the map
     evacuees_with_ids = []
-    for i in range(len(evacuees_id_list)):
-        if evacuees_position_list[i] is None:
-            continue
-        evacuees_with_ids.append({'evacuee_id': evacuees_id_list[i], 'longitude': evacuees_position_list[i][0], 'latitude': evacuees_position_list[i][1], 'z': evacuees_position_list[i][2]})
+    for evac_id in evacuee_ids:
+        pos = position_map.get(evac_id)
+        if pos:
+            evacuees_with_ids.append({
+                'evacuee_id': evac_id, 
+                'latitude': pos[0], # Based on your SQL: Latitude is r[1]
+                'longitude': pos[1], # Longitude is r[2]
+                'z': pos[2]          # Z is r[3]
+            })
         
-    print("evacuees with ids", evacuees_with_ids)
-    # Get the list of hazards id of the simulation
+    print(f"Batch fetched {len(evacuees_with_ids)} evacuee positions", flush=True)
+
+    # 4. Get hazards (1 DB call)
     hazards_list_from_db = get_simulation_hazards(simulation_id)
-    print("hazards from db", hazards_list_from_db)
-    hazards_list = []
-    for hazard in hazards_list_from_db:
-        hazards_list.append({
-            'hazard_type': hazard.get('Hazard_Type'),
-            'latitude': hazard.get('Latitude'),
-            'longitude': hazard.get('Longitude'),
-            'z': hazard.get('Z'),
-            'step_order' : hazard.get('Step_Order')
-        })
     
-    # Add the new hazard to the list of hazards
+    hazards_list = [{
+        'hazard_type': h.get('Hazard_Type'),
+        'latitude': h.get('Latitude'),
+        'longitude': h.get('Longitude'),
+        'z': h.get('Z'),
+        'step_order': h.get('Step_Order')
+    } for h in hazards_list_from_db]
+    
+    # 5. Add the new hazard
     hazards_list.append({
         'hazard_type': hazard_type,
         'latitude': hazard_position['latitude'],
         'longitude': hazard_position['longitude'],
         'z': hazard_position['z'],
-        'step_order' : current_step
+        'step_order': current_step
     })
-
     
     """
         Calculation of the new path for the evacuees

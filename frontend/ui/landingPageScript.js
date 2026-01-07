@@ -1,4 +1,4 @@
-import { addFire , addEvacuee} from "../map/mapGraphics.js";
+import { addFire , addEvacuee, addCollapse} from "../map/mapGraphics.js";
 import { closeMenu } from "../map/mapInteraction.js";
 import { API_BASE_URL } from "../src/config.js";
 import { WEB_URL } from "../src/config.js";

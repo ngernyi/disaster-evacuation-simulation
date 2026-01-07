@@ -79,6 +79,25 @@ document.addEventListener("DOMContentLoaded", function () {
       
     }
 
+    // Add building collapse
+    
+    const addCollapseBtn = document.getElementById("addCollapseBtn");
+    if (addCollapseBtn) {
+      console.log("addFireBtn found ");
+      addCollapseBtn.addEventListener("click", function () {
+        console.log("addFireBtn clicked");
+        const { longitude, latitude, z } = window.lastClickedPoint;
+
+        // add fire in the map
+        addCollapse(longitude, latitude, z);
+
+        // add fire in the list
+        hazardsAdded.push({hazard_type: "fire",longitude, latitude, z });
+
+        closeMenu();
+      });
+    }
+
     // Add Fire button
     const addFireBtn = document.getElementById("addFireBtn");
     if (addFireBtn) {

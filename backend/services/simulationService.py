@@ -1,6 +1,48 @@
 from config.db import get_connection
 from datetime import datetime
 
+def get_export_stats_batch(simulation_ids):
+    if not simulation_ids:
+        return {}
+    
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    # Use tuple for the IN clause
+    placeholders = ','.join(['?'] * len(simulation_ids))
+    query = f"""
+        SELECT 
+            s.Simulation_Id,
+            (SELECT COUNT(*) FROM Evacuees WHERE Simulation_Id = s.Simulation_Id) as EvacCount,
+            (SELECT COUNT(*) FROM Hazards WHERE Simulation_Id = s.Simulation_Id) as HazCount,
+            (SELECT MAX(Step_Order) FROM ROUTE_POINT rp 
+             JOIN Evacuees e ON rp.Evacuee_Id = e.evacuee_id 
+             WHERE e.simulation_id = s.Simulation_Id) as MaxSteps
+        FROM Simulation s
+        WHERE s.Simulation_Id IN ({placeholders})
+    """
+    
+    try:
+        cursor.execute(query, tuple(simulation_ids))
+        rows = cursor.fetchall()
+        
+        stats_map = {}
+        for r in rows:
+            # Using index [0], [1] is safer across different ODBC drivers
+            sim_id = r[0]
+            stats_map[sim_id] = {
+                'evacuees': r[1] if r[1] else 0,
+                'hazards': r[2] if r[2] else 0,
+                'duration': (r[3] if r[3] else 0) / 50
+            }
+        return stats_map
+    except Exception as e:
+        print(f"DATABASE ERROR IN BATCH STATS: {e}")
+        return {}
+    finally:
+        cursor.close()
+        conn.close()
+        
 def get_batch_simulation_stats(evaluation_id):
     conn = get_connection()
     cursor = conn.cursor()

@@ -64,7 +64,7 @@ def microsoft_callback():
         else:
             if get_user_roles(session['user_info']['id']).rstrip() == 'Banned':
                 session.clear()
-                return redirect(frontend_url + '/auth/banned.html')
+                return redirect(frontend_url + '/html/banned.html')
         return redirect(frontend_url + '/html/landingPage.html')
     else:
         print("Error during Microsoft login:", result.get("error_description"))
@@ -116,7 +116,7 @@ def google_callback():
 
             session.clear()  # Clear all session data
             print("Logged outttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt")
-            return redirect(frontend_url+'/auth/banned.html')
+            return redirect(frontend_url+'/html/banned.html')
         
         
     print("Not banned")

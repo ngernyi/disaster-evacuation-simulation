@@ -1,6 +1,39 @@
 from config.db import get_connection
 from datetime import datetime
 
+def get_batch_evacuee_positions(evacuee_ids, step_order):
+    if not evacuee_ids:
+        return {}
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    placeholders = ','.join(['?'] * len(evacuee_ids))
+    # We fetch Latitude, Longitude, Z, and the ID so we can map them
+    query = f"""
+        SELECT Evacuee_Id, Latitude, Longitude, Z 
+        FROM ROUTE_POINT 
+        WHERE Step_Order = ? AND Evacuee_Id IN ({placeholders})
+    """
+    
+    # The parameters must be (step_order, id1, id2, ...)
+    params = [step_order] + list(evacuee_ids)
+    
+    try:
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+        
+        # Create a dictionary: {id: (lat, lon, z)}
+        position_map = {}
+        for r in rows:
+            # Using index for safety
+            position_map[r[0]] = (r[1], r[2], r[3])
+            
+        return position_map
+    finally:
+        cursor.close()
+        conn.close()
+
 def get_export_stats_batch(simulation_ids, target_sim_id=None):
     if not simulation_ids:
         return {}, []

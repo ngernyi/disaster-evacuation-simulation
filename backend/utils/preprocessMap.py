@@ -64,7 +64,7 @@ def read_map_file(file_path):
 # function to create the grid
 # input: minMaxXY, cell_size, padding
 # output: grid filled with 1, (min_x, max_x, min_y, max_y), (rows, cols)
-def create_grid(minMaxXY, cell_size=0.05, padding=2):
+def create_grid(minMaxXY, cell_size=0.05, padding=20):
     min_x, max_x, min_y, max_y = minMaxXY
 
     # add padding
@@ -195,7 +195,7 @@ def fill_grid_with_map_data(grid, map_data, minMaxXY, cell_size=0.05):
 # Main execution
 if __name__ == "__main__":
     print("Reading map file...")
-    map_data, minMaxXY = read_map_file("/mnt/c/Users/Admin/Downloads/walls_floor3.txt")
+    map_data, minMaxXY = read_map_file("/mnt/c/Users/Admin/Downloads/walls_floor1.txt")
     
     print("Creating grid...")
     grid, (min_x, max_x, min_y, max_y), (rows, cols) = create_grid(minMaxXY)
@@ -206,9 +206,9 @@ if __name__ == "__main__":
 
     # Save the results
     print("Saving grid data...")
-    np.save("filled_grid_lv3.npy", filled_grid)
+    np.save("filled_grid_lv1_1.npy", filled_grid)
     minMaxXY_final = [min_x, max_x, min_y, max_y]
-    np.save("minMaxXY_lv3.npy", minMaxXY_final)
+    np.save("minMaxXY_lv1_1.npy", minMaxXY_final)
 
     # Visualization with better settings
     print("Displaying grid...")
@@ -219,6 +219,6 @@ if __name__ == "__main__":
     plt.xlabel('Grid Column')
     plt.ylabel('Grid Row')
     # plt.show()
-    plt.savefig("filled_grid_lv3.png")
+    plt.savefig("filled_grid_lv1_1.png")
     
     print("Processing complete!")

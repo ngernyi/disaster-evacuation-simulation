@@ -12,9 +12,9 @@ def load_nav_data_pickle(filename):
     return data["graph"], data["centroids"], data["points"], data["triangles"]
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-filled_map_path_lv1 = os.path.join(BASE_DIR, "filled_grid.npy")
-minMaxXY_path_lv1= os.path.join(BASE_DIR, "minMaxXY.npy")
-nav_data_path_lv1 = os.path.join(BASE_DIR, "nav_data2.pkl")
+filled_map_path_lv1 = os.path.join(BASE_DIR, "filled_grid_lv1_1.npy")
+minMaxXY_path_lv1= os.path.join(BASE_DIR, "minMaxXY_lv1_1.npy")
+nav_data_path_lv1 = os.path.join(BASE_DIR, "nav_data2_lv1_1.pkl")
 
 filled_map_path_lv2 = os.path.join(BASE_DIR, "filled_grid_lv2.npy")
 minMaxXY_path_lv2= os.path.join(BASE_DIR, "minMaxXY_lv2.npy")

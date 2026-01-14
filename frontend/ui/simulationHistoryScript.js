@@ -26,7 +26,7 @@ window.onload = function() {
             id: sim.Simulation_Id,
             name: sim.Simulation_Name || 'Unnamed Simulation',
             date: sim.Created_At,
-            duration: sim.Duration ? parseFloat(sim.Duration/50) : 0
+            duration: sim.Duration ? parseFloat(sim.Duration/2.5) : 0
         }));
 
         const userData = data.user_data;
@@ -276,7 +276,7 @@ function showEvaluation(simItem, simId, simName) {
                 maxLength = evacuation.route.length;
             }   
         }
-        const duration = maxLength /50; 
+        const duration = maxLength /2.5; 
         const minutes = Math.floor(duration / 60);
         const seconds = Math.floor(duration % 60);
         let durationText = `${minutes}m ${seconds}s`;
@@ -341,8 +341,9 @@ function showEvaluation(simItem, simId, simName) {
 
 
 
-    exportCSVBtn.addEventListener('click', () => downloadCSV(simId, simName));
-    exportPdfBtn.addEventListener('click', () => downloadPdf(simId, simName));
+    exportCSVBtn.onclick = () => downloadCSV(simId, simName);
+    exportPdfBtn.onclick = () => downloadPdf(simId, simName);
+
 
     
     
@@ -438,17 +439,17 @@ function calculateEscapeOverTime(evacuees, maxLength) {
         evacueesEscaped.push(cumulative);
     }
     // Step 4 : Leave only every 50 steps
-    timeData = timeData.filter((_, index) => index % 50 === 0);
+    timeData = timeData.filter((_, index) => index % 5 === 0);
     for (let i = 0; i < timeData.length; i++) {
-        timeData[i] = timeData[i] / 50;
+        timeData[i] = timeData[i] / 2.5;
     }
     // for (let i = 0; i < evacueesEscaped.length; i++) {
     //     evacueesEscaped[i] = evacueesEscaped[i] / 50;
     // }
-    evacueesEscaped = evacueesEscaped.filter((_, index) => index % 50 === 0);
+    evacueesEscaped = evacueesEscaped.filter((_, index) => index % 2.5 === 0);
 
     // Step 5: Add last 
-    timeData.push(maxLength / 50);
+    timeData.push(maxLength / 2.5);
     evacueesEscaped.push(evacuees.length);
 }
 

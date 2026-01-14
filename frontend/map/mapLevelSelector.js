@@ -185,14 +185,14 @@ function showsAndHideGraphics(floor){
     max = 15;
   }
   console.log(min, max, floor);
-  for (let i = 0; i < window.mapView.graphics.length; i++) {
-    const graphic = window.mapView.graphics.items[i];
-    const z = graphic.geometry.z;
+  // for (let i = 0; i < window.mapView.graphics.length; i++) {
+  //   const graphic = window.mapView.graphics.items[i];
+  //   const z = graphic.geometry.z;
 
-    if (z <= max && z >= min) {
-      graphic.visible = true;
-    } else {
-      graphic.visible = false;
-    }
-  }  
+  //   if (z <= max && z >= min) {
+  //     graphic.visible = true;
+  //   } else {
+  //     graphic.visible = false;
+  //   }
+  // }  
 }

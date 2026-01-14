@@ -1,7 +1,7 @@
   
 #buildingLevel {
     position: absolute;
-    bottom: 5vh;
+    bottom: 35px;
     left: 2vw;
     background-color: #444;
     border-radius: 8px;
@@ -28,4 +28,23 @@
     /* transition: all 0.2s ease; smooth hover animation */
   }
   
+  .legend-container {
+    position: absolute;
+    bottom: 120px; /* 5vh */
+    left: 2vw;
+    /* right : 2vw; */
+    height: auto;
+    background:  #444;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    z-index: 100;
+    font-family: sans-serif;
+  }
+  .legend-container h4 { margin: 0 0 10px 0; font-size: 14px; color: #fff; }
+  /* .legend-container p { margin: 0; font-size: 12px; color: #fff; } */
+  /* .legend-container p span { display: inline-block; width: 10px; height: 10px; margin-right: 5px; } */
+  .switch { font-size: 12px; display: block;  cursor: pointer; color: #fff}
  
+  
+  

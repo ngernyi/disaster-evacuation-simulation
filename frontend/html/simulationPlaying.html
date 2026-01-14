@@ -42,8 +42,8 @@
             
             <!-- Buttons -->
             <div class="button-group">
-                <!-- <button class="control-btn" id="pauseBtn">&#9208;</button> -->
-                <div></div>
+                <button class="control-btn" id="speedBtn">x2</button>
+                <!-- <div></div> -->
                 <button class="control-btn" id="resumeBtn">&#9654;</button>
                 <button class="control-btn" id="stopBtn">&#9209;</button>
             </div>
@@ -77,6 +77,26 @@
                 <option value="FLOOR = '2'">Level 2</option>
                 <option value="FLOOR = '3'">Level 3</option>
             </select>
+        </div>
+        
+
+        <div id="legendPanel" class="legend-container">
+        <h4>Map Layers</h4>
+        <label class="switch">
+            <input type="checkbox" id="checkDimension" checked>
+            <span class="slider"></span> Show Dimensions
+        </label>
+        <br>
+        <label class="switch">
+            <input type="checkbox" id="checkAssembly" checked>
+            <span class="slider"></span> Show Assembly Points
+        </label>
+        <br>
+        <label class="switch">
+            <input type="checkbox" id="checkStaircase" checked>
+            <span class="slider"></span> Show Staircases
+        </label>
+        
         </div>
         <div id="loadingModal" class="loading-modal">
             <div>

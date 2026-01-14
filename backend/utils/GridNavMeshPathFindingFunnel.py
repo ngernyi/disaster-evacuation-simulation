@@ -515,15 +515,33 @@ def expand_funnel_path(funnel_points):
     
 
 
-
-def navMeshPathWithFunnel(start, graphList, floor, path_from_stair1_to_exit=None,  path_from_stair2_to_exit=None, step=0.05,):
+"""
+    START NEW CODE - add 2 stairs (CHANGE ARGUMENTS)
+"""
+def navMeshPathWithFunnel(start, graphList, floor, path_from_stair1_to_exit=None,  path_from_stair2_to_exit=None, path_from_stair3_to_exit=None, path_from_stair4_to_exit=None,step=0.05,):
+    """
+        END NEW CODE - add 2 stairs, add 2 more assembly points
+    """
     start_time = time.time()
-    goal_main = -117.195679043251, 34.05594565305
+    # goal_main = -117.195679043251, 34.05594565305
+    goal1 = -117.19623505024354, 34.05621487659595
+    goal2 = -117.1956520625412, 34.05639161712975
+    goal3 = -117.19512781129663, 34.056053736202315
     stair1 = -117.19603379555, 34.05624942388
     stair2 = -117.195333804329, 34.055954726546
-    goal_lv1 = [goal_main]
-    goal_lv2 = [stair1, stair2]
-    goal_lv3 = [stair1, stair2]
+    """
+        START NEW CODE - add 2 stairs (ADD 2 STAIRS and modified goal)
+    """
+    stair3 = -117.19557424707945, 34.056118766847334
+    stair4 = -117.19578962444298, 34.0560899781941
+    
+    goal_lv1 = [goal1, goal2, goal3]
+    goal_lv2 = [stair1, stair2, stair3, stair4]
+    goal_lv3 = [stair1, stair2, stair3, stair4]
+    
+    """
+        END NEW CODE - add 2 stairs
+    """
     floor_data = [0,5.66999911144376, 10.2499997382984]
     if floor == 1:
         filled_map = NAV_DATA["filled_map_lv1"]
@@ -613,66 +631,173 @@ def navMeshPathWithFunnel(start, graphList, floor, path_from_stair1_to_exit=None
     
     # add the path in the stairs
     # if the agent is not at the floor 1
+    # --- START OF FIXED STAIRCASE LOGIC ---
+    
+    # if the agent is not at the floor 1 (needs to go down)
     if floor != 1:
         
-        # let the agent go downwards
-        down_path = full_path[-1]
+        # 1. Get the starting position (Top of stair)
+        start_node = full_path[-1] 
+        # Convert start node to UTM using the CURRENT floor's minMax
+        current_utm_x, current_utm_y = from_grid_to_utm(start_node[1], start_node[0], NAV_DATA[f"minMaxXY_lv{floor}"], step)
+        
+        # 2. Pre-calculate Grid Coordinates (Same as your code)
+        stair_coords_map = {}
+        
+        # Floor 1
+        f1_row, f1_col = from_utm_to_grid(current_utm_x, current_utm_y, NAV_DATA["minMaxXY_lv1"], step)
+        stair_coords_map[1] = (f1_col, f1_row)
+        
+        # Floor 2
+        if "minMaxXY_lv2" in NAV_DATA:
+            f2_row, f2_col = from_utm_to_grid(current_utm_x, current_utm_y, NAV_DATA["minMaxXY_lv2"], step)
+            stair_coords_map[2] = (f2_col, f2_row)
+            
+        # Floor 3
+        if "minMaxXY_lv3" in NAV_DATA:
+            f3_row, f3_col = from_utm_to_grid(current_utm_x, current_utm_y, NAV_DATA["minMaxXY_lv3"], step)
+            stair_coords_map[3] = (f3_col, f3_row)
+
+        # 3. Begin Descent Loop
+        down_path = start_node
         
         while down_path[2] > 0:
-            # add 1.5 or 2.5 to in the agent status to represent the stairs
-            if down_path[2] > 5:
-                # make sure only add it once
+            current_z = down_path[2]
+            
+            # Update Agent Status (Visuals) - Keep your existing logic
+            if current_z > 5:
                 if agent_status[-1][1] != 2.5:
                     agent_status.append((len(full_path), 2.5))
-                
-                down_path = (down_path[0], down_path[1], down_path[2] - 0.10)
             else:
-                # make sure only add it once
                 if agent_status[-1][1] != 1.5:
                     agent_status.append((len(full_path), 1.5))
-                    
-                down_path = (down_path[0], down_path[1], down_path[2] - 0.10)
 
-            if down_path[2] < 0:
-                # down_path = (down_path[0], down_path[1], floor_data[floor-2])
-                
-                # make sure it reach the ground floor                
-                down_path = (down_path[0], down_path[1], 0, 1)
-                
-                full_path.append(down_path)
-                break
+            # --- CALCULATE NEW Z FIRST ---
+            new_z = current_z - 0.10
+
+            # Handle ground floor snap
+            if new_z <= 0:
+                new_z = 0
+                active_floor_id = 1 # Ground is Floor 1
+            else:
+                # --- FIX 1: DETERMINE FLOOR BASED ON THE FUTURE Z (new_z) ---
+                # This ensures the (x,y) matches the map that will be used for this Z
+                if new_z > 7:
+                    active_floor_id = 3
+                elif new_z > 3:
+                    active_floor_id = 2
+                else:
+                    active_floor_id = 1
+            
+            # Safety clamp
+            if active_floor_id > floor: active_floor_id = floor
+
+            # Retrieve coordinates for the CORRECT floor
+            target_x, target_y = stair_coords_map.get(active_floor_id, (down_path[0], down_path[1]))
+            
+            # Create point
+            down_path = (target_x, target_y, new_z)
             full_path.append(down_path)
+
+            # Break if we hit ground
+            if new_z <= 0:
+                # Add status for reaching floor 1
+                agent_status.append((len(full_path), 1)) 
+                break
             
-            
-        
         print("full path length after adding stairs", len(full_path))
-        # add the path from stairs to the main goal
-        # print("oath", path_from_stair1_to_exit)
-        # find the path to be used 
-        # grid_of_stair1 = from_wgs_to_utm(path_from_stair1_to_exit[0][0], path_from_stair1_to_exit[0][1])
-        # grid_of_stair1 = from_utm_to_grid(grid_of_stair1[0], grid_of_stair1[1], NAV_DATA["minMaxXY_lv1"])
-        # print("grid of stair 1", grid_of_stair1)
-        # print(full_path[-1])
-        
-        # add the agent status to floor 1
-        agent_status.append((len(full_path), 1))
-        
-        # debug print
-        print("original path from stair ", path_from_stair1_to_exit[0][0], path_from_stair1_to_exit[0][1])
-        print("original full path ", full_path[-1][0], full_path[-1][1])
         
         
+        """
+            STAIR CONNECTION LOGIC (Refined for Problem 2)
+        """
         
-        if abs(path_from_stair1_to_exit[0][0] - full_path[-1][0]) < 50 and abs(path_from_stair1_to_exit[0][1] - full_path[-1][1]) < 50:
-        # if abs(grid_of_stair1[0] - full_path[-1][0]) < 10 and abs(grid_of_stair1[1] - full_path[-1][1]) < 10:
-            # add the path
-            full_path.extend(path_from_stair1_to_exit)
-            print("stair 1 is used")
-        else:
-            full_path.extend(path_from_stair2_to_exit)
-            print("stair 2 is used")
+        # 1. Get the last point (This is now definitely on Floor 1 Grid)
+        last_point_grid = full_path[-1] 
+        
+        # 2. Convert Agent Grid -> UTM
+        # --- FIX 2: FORCE USE OF FLOOR 1 MINMAX ---
+        # Do NOT use 'minMaxXY' (which might be Floor 3). Use NAV_DATA["minMaxXY_lv1"]
+        agent_utm_x, agent_utm_y = from_grid_to_utm(last_point_grid[1], last_point_grid[0], NAV_DATA["minMaxXY_lv1"], step)
+        
+        # 3. Define Stairs
+        stair_options = [
+            {'name': 'stair1', 'wgs': stair1, 'path': path_from_stair1_to_exit},
+            {'name': 'stair2', 'wgs': stair2, 'path': path_from_stair2_to_exit},
+            {'name': 'stair3', 'wgs': stair3, 'path': path_from_stair3_to_exit},
+            {'name': 'stair4', 'wgs': stair4, 'path': path_from_stair4_to_exit}
+        ]
+
+        best_path = None
+        min_dist = float('inf') 
+        chosen_stair_name = ""
+
+        print(f"Checking distance to stairs (Agent UTM: {agent_utm_x:.2f}, {agent_utm_y:.2f})")
+
+        for option in stair_options:
+            if option['path'] is None: continue 
+
+            # Convert Fixed Stair WGS -> UTM
+            s_wgs = option['wgs']
+            s_utm_x, s_utm_y = from_wgs_to_utm(s_wgs[0], s_wgs[1])
             
-        print("full path length after adding floor 1 path to main goal", len(full_path))
+            # Calculate Distance in METERS
+            dist_meters = ((s_utm_x - agent_utm_x) ** 2 + (s_utm_y - agent_utm_y) ** 2) ** 0.5
+            
+            if dist_meters < min_dist:
+                min_dist = dist_meters
+                best_path = option['path']
+                chosen_stair_name = option['name']
+
+        # 4. Attach path
+        # Using 5.0 meters tolerance
+        if best_path and min_dist < 5.0: 
+            full_path.extend(best_path)
+            print(f"✅ Snapped to {chosen_stair_name} (Distance: {min_dist:.2f}m)")
+        else:
+            if best_path:
+                full_path.extend(best_path)
+                print(f"⚠️ WARNING: Agent was far ({min_dist:.2f}m) but forced to {chosen_stair_name}")
+            else:
+                print("❌ CRITICAL: No stair path available to attach.")
+        # Get the current end point
+        # current_end_x = full_path[-1][0]
+        # current_end_y = full_path[-1][1]
+        
+        # # Check Stair 1
+        # if path_from_stair1_to_exit and abs(path_from_stair1_to_exit[0][0] - current_end_x) <100 and abs(path_from_stair1_to_exit[0][1] - current_end_y) < 100:
+        #     full_path.extend(path_from_stair1_to_exit)
+        #     print("stair 1 is used")
+        # # Check Stair 2
+        # elif path_from_stair2_to_exit and abs(path_from_stair2_to_exit[0][0] - current_end_x) < 100 and abs(path_from_stair2_to_exit[0][1] - current_end_y) < 100:
+        #     full_path.extend(path_from_stair2_to_exit)
+        #     print("stair 2 is used")
+        # # Check Stair 3
+        # elif path_from_stair3_to_exit and abs(path_from_stair3_to_exit[0][0] - current_end_x) < 100 and abs(path_from_stair3_to_exit[0][1] - current_end_y) < 100:
+        #     full_path.extend(path_from_stair3_to_exit)
+        #     print("stair 3 is used")
+        # # Check Stair 4
+        # elif path_from_stair4_to_exit and abs(path_from_stair4_to_exit[0][0] - current_end_x) < 100 and abs(path_from_stair4_to_exit[0][1] - current_end_y) < 100:
+        #     full_path.extend(path_from_stair4_to_exit)
+        #     print("stair 4 is used")
+        # else:
+        #     print("⚠️ No matching stair path found close to the agent")
+            
+        # print("full path length after adding floor 1 path to main goal", len(full_path))
+        ### END MODIFICATION
+        """
+            END NEW CODE - add 2 stairs
+        """
+        # if abs(path_from_stair1_to_exit[0][0] - full_path[-1][0]) < 50 and abs(path_from_stair1_to_exit[0][1] - full_path[-1][1]) < 50:
+        # # if abs(grid_of_stair1[0] - full_path[-1][0]) < 10 and abs(grid_of_stair1[1] - full_path[-1][1]) < 10:
+        #     # add the path
+        #     full_path.extend(path_from_stair1_to_exit)
+        #     print("stair 1 is used")
+        # else:
+        #     full_path.extend(path_from_stair2_to_exit)
+        #     print("stair 2 is used")
+            
+        # print("full path length after adding floor 1 path to main goal", len(full_path))
         
         
         

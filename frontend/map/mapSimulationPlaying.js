@@ -5,6 +5,7 @@ import { setPauseButton, setReplayButton, setResumeButton, updateEscapedNumber, 
 let isPaused = true;
 let isEnded = false;
 let currentStep = 0;
+let simulationTimer;
 // function to play the simulation
 /*  params:
     - currentStep : current step of the simulation
@@ -26,7 +27,7 @@ export function playSimulation(evacueeGraphic, evacueeMovement, fireGraphic, fir
     updateEvacueesAtStep(currentStep, evacueeGraphic, fireGraphic, fireStepOrder, evacueeMovement);
 
     // call the function again after the interval
-    setTimeout(() => {
+    simulationTimer = setTimeout(() => {
         if (!isPaused) {
             currentStep++;
             playSimulation(evacueeGraphic, evacueeMovement, fireGraphic, fireStepOrder, interval);
@@ -69,6 +70,7 @@ function updateEvacueesAtStep(step, evacueeGraphic, fireGraphic, fireStepOrder, 
 
 export function pauseSimulation() {
     isPaused = true;
+    clearTimeout(simulationTimer);
     setResumeButton();
 }
 

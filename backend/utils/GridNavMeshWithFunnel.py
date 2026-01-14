@@ -188,8 +188,8 @@ def plot_nav_graph(points, tri, graph, centroids, filled_map=None):
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-filled_map_path = os.path.join(BASE_DIR, "filled_grid_lv3.npy")
-minMaxXY_path = os.path.join(BASE_DIR, "minMaxXY_lv3.npy")
+filled_map_path = os.path.join(BASE_DIR, "filled_grid_lv1_1.npy")
+minMaxXY_path = os.path.join(BASE_DIR, "minMaxXY_lv1_1.npy")
 
 filled_map, minMaxXY = read_filled_grid_and_minMaxXY(
     filled_map_path, 
@@ -232,4 +232,4 @@ def save_nav_data_pickle(filename, graph, centroids, points, triangles):
 
 
 
-save_nav_data_pickle("nav_data2_lv3.pkl", graph, centroids, points, tri)
+save_nav_data_pickle("nav_data2_lv1_1.pkl", graph, centroids, points, tri)

@@ -61,7 +61,7 @@ def microsoft_callback():
         else:
             if get_user_roles(session['user_info']['id']).rstrip() == 'Banned':
                 session.clear()
-                return redirect('http://localhost:5501/Code/frontend/auth/banned.html')
+                return redirect('http://localhost:5501/Code/frontend/html/banned.html')
         return redirect('http://localhost:5501/Code/frontend/html/landingPage.html')
     else:
         print("Error during Microsoft login:", result.get("error_description"))

@@ -117,15 +117,17 @@
 
 // });
 
-import { playSimulation, pauseSimulation, setCurrentStep, handleControlButton, getIsPause, getCurrentStep } from "../map/mapSimulationPlaying.js";
-import { addEvacuee, addFire } from "../map/mapGraphics.js";
+import { playSimulation, pauseSimulation, setCurrentStep, handleControlButton, getIsPause, getCurrentStep, resumeSimulation } from "../map/mapSimulationPlaying.js";
+import { addEvacuee, addFire, addCollapse } from "../map/mapGraphics.js";
 import { closeMenu } from "../map/mapInteraction.js";
+import { showAssemblyPoint, showDimension, showStairCase,toggleLayer } from "../map/mapLegend.js";
 
 const evacueesGraphic = [];
 const fireGraphic = [];
 const evacueeMovement = [];
 const fireStepOrder = [];
-const speed = 20;
+const speed = 400;
+let multiplier = 2;
 let totalSteps = 0;
 const progressContainer = document.getElementById("progressContainer");
 const progressBar = document.getElementById("progressBar");
@@ -214,7 +216,7 @@ function updateDuration() {
 document.getElementById('resumeBtn').addEventListener('click', () => {
     console.log("Resume button clicked");
     // startSimulation(evacueesGraphic, evacueeMovement);
-    handleControlButton(evacueesGraphic, evacueeMovement, fireGraphic, fireStepOrder,speed);
+    handleControlButton(evacueesGraphic, evacueeMovement, fireGraphic, fireStepOrder,speed/multiplier);
 });
 // document.getElementById('pauseBtn').addEventListener('click', pauseSimulation);
 document.getElementById('stopBtn').addEventListener('click', () => {
@@ -251,6 +253,35 @@ export function setReplayButton(){
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+  // add show legend
+    showDimension(); 
+    showAssemblyPoint();
+    showStairCase();
+
+    const checkDim = document.getElementById("checkDimension");
+    if (checkDim) {
+        checkDim.addEventListener("change", function () {
+            toggleLayer('dimension', this.checked);
+        });
+    }
+
+    // Checkbox for Assembly Points
+    const checkAsm = document.getElementById("checkAssembly");
+    if (checkAsm) {
+        checkAsm.addEventListener("change", function () {
+          console.log("checkAssembly called");
+            toggleLayer('assembly', this.checked);
+        });
+    }
+
+    const checkStairs = document.getElementById("checkStaircase");
+    if (checkStairs) {
+        checkStairs.addEventListener("change", function () {
+            // This matches the 'staircase' string in your if/else logic above
+            toggleLayer('staircase', this.checked);
+        });
+    }
+
     const loadingElement = document.getElementById("loadingModal"); 
     // hide the loading element
     loadingElement.style.display = "flex";
@@ -296,8 +327,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         data.hazards.forEach(hz => {
             console.log(hz);
             fireStepOrder.push(hz.Step_Order);
-            const fireGraphicAdded = addFire(hz.Longitude, hz.Latitude, hz.Z);
-            fireGraphic.push(fireGraphicAdded);
+            if(hz.Hazard_Type === "fire"){
+              const fireGraphicAdded = addFire(hz.Longitude, hz.Latitude, hz.Z);
+              fireGraphic.push(fireGraphicAdded);
+            }
+            else{
+              const fireGraphicAdded = addCollapse(hz.Longitude, hz.Latitude, hz.Z);
+              fireGraphic.push(fireGraphicAdded);
+            }
+            
         });
 
         console.log(fireStepOrder);
@@ -308,18 +346,57 @@ document.addEventListener("DOMContentLoaded", async () => {
         updateDuration();
 
         // startSimulation
-        playSimulation(evacueesGraphic, evacueeMovement, fireGraphic, fireStepOrder, speed);
+        playSimulation(evacueesGraphic, evacueeMovement, fireGraphic, fireStepOrder, speed/multiplier);
     })
     .catch(error => console.error('Error:', error)); 
     console.log("done")
 });
 
 let pendingPoint = null;
+let hazard_type = null;
 let isPaused = null;
 // function to handle onclick add fire
 document.getElementById('addFireBtn').addEventListener('click', () => {
   const { longitude, latitude, z } = window.lastClickedPoint;
   pendingPoint = { longitude, latitude, z };
+  isPaused = getIsPause();
+  hazard_type = "fire";
+  // ask user for confirmation
+  document.getElementById('confirmAddingMenuId').style.display = 'block';
+  pauseSimulation();
+
+  // const confirmAddBtn = document.getElementById('confirmAddBtn');
+  // const cancelAddBtn = document.getElementById('cancelAddBtn');
+
+  // window.lastClickedPoint = null;
+  closeMenu();
+});
+
+document.getElementById('speedBtn').addEventListener('click', () => {
+  if (multiplier === 2) {
+    multiplier = 5;
+    document.getElementById('speedBtn').innerHTML = "x5";
+  } else if (multiplier === 5) {
+    multiplier = 1;
+    document.getElementById('speedBtn').innerHTML = "x1";
+  }
+  else {
+    multiplier = 2;
+    document.getElementById('speedBtn').innerHTML = "x2";
+  }
+  // 2. Explicitly restart with new speed ONLY if it is currently running
+  if (!isPaused) {
+    pauseSimulation(); // Stop the old speed
+    resumeSimulation(evacueesGraphic, evacueeMovement, fireGraphic, fireStepOrder, speed/multiplier); // Start new speed
+}
+
+
+})
+
+document.getElementById('addCollapseBtn').addEventListener('click', () => {
+  const { longitude, latitude, z } = window.lastClickedPoint;
+  pendingPoint = { longitude, latitude, z };
+  hazard_type = "collapse";
   isPaused = getIsPause();
   // ask user for confirmation
   document.getElementById('confirmAddingMenuId').style.display = 'block';
@@ -341,8 +418,13 @@ confirmAddBtn.addEventListener('click', () => {
 
   // console.log(currentStep);
   // console.log(simulationId);
-
-  regenerateSimulation(currentStep, "fire", pendingPoint);
+  if(hazard_type === "collapse"){
+    regenerateSimulation(currentStep, "building_collapse", pendingPoint);
+  }
+  else{
+    regenerateSimulation(currentStep, "fire", pendingPoint);
+  }
+  
   
   document.getElementById('confirmAddingMenuId').style.display = 'none';
 });
@@ -352,7 +434,7 @@ cancelAddBtn.addEventListener('click', () => {
 
   // if the previous playing mode is play, resume the simulation
   if(isPaused === false){
-    handleControlButton(evacueesGraphic, evacueeMovement, speed);
+    handleControlButton(evacueesGraphic, evacueeMovement, speed/multiplier);
   }
 });
 

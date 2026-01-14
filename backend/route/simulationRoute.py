@@ -82,6 +82,14 @@ def create_session_sim_route():
             # pre calculate the path from stair to the exit
             stair1 = -117.19603379555, 34.05624942388
             stair2 = -117.195333804329, 34.055954726546
+            """
+                START NEW CODE - add 2 stairs
+            """
+            stair3 = -117.19557424707945, 34.056118766847334
+            stair4 = -117.19578962444298, 34.0560899781941
+            """
+                END NEW CODE - add 2 stairs
+            """
             
             path_from_stair1_to_exit, path_1_status = navMeshPathWithFunnel(stair1, graphList, 1, 0.05, )
             path_from_stair2_to_exit, path_2_status = navMeshPathWithFunnel(stair2, graphList, 1, 0.05, )
@@ -89,6 +97,17 @@ def create_session_sim_route():
             print("first and last step of path 2", path_from_stair2_to_exit[0], path_from_stair2_to_exit[-1])
             print("stair 1", path_from_stair1_to_exit)
             print("stair 2", path_from_stair2_to_exit)
+            
+            """
+                START NEW CODE - add 2 stairs
+            """
+            path_from_stair3_to_exit, path_3_status = navMeshPathWithFunnel(stair3, graphList, 1, 0.05, )
+            path_from_stair4_to_exit, path_4_status = navMeshPathWithFunnel(stair4, graphList, 1, 0.05, )
+            print("stair 3", path_from_stair3_to_exit)
+            print("stair 4", path_from_stair4_to_exit)
+            """
+                END NEW CODE - add 2 stairs
+            """
             # create a list to store the routes
             routes = []
             agent_status = []
@@ -106,7 +125,24 @@ def create_session_sim_route():
                 else :
                     floor = 3
                 
-                path, status = navMeshPathWithFunnel(start, graphList, floor, path_from_stair1_to_exit,  path_from_stair2_to_exit, step,)
+                """
+                    START NEW CODE - add 2 stairs
+                """
+                path, status = navMeshPathWithFunnel(
+                    start, 
+                    graphList, 
+                    floor, 
+                    path_from_stair1_to_exit,  
+                    path_from_stair2_to_exit, 
+                    
+                    path_from_stair3_to_exit, # Added
+                    path_from_stair4_to_exit, # Added
+                    
+                
+                    step,)
+                """
+                    END NEW CODE - add 2 stairs
+                """
                 agent_status.append(status)
                 routes.append(path)
                 
@@ -198,12 +234,34 @@ def create_custom_sim_route():
     stair1 = -117.19603379555, 34.05624942388
     stair2 = -117.195333804329, 34.055954726546
     
+    """
+        START NEW CODE - add 2 stairs
+    """
+    stair3 = -117.19557424707945, 34.056118766847334
+    stair4 = -117.19578962444298, 34.0560899781941
+    """
+        END NEW CODE - add 2 stairs
+    """
+    
+    
     path_from_stair1_to_exit, path_1_status = navMeshPathWithFunnel(stair1, graphList, 1, 0.05, )
     path_from_stair2_to_exit, path_2_status = navMeshPathWithFunnel(stair2, graphList, 1, 0.05, )
     print("first and last step of path 1", path_from_stair1_to_exit[0], path_from_stair1_to_exit[-1])
     print("first and last step of path 2", path_from_stair2_to_exit[0], path_from_stair2_to_exit[-1])
     print("stair 1", path_from_stair1_to_exit)
     print("stair 2", path_from_stair2_to_exit)
+    
+    """
+        START NEW CODE - add 2 stairs
+    """
+    path_from_stair3_to_exit, path_3_status = navMeshPathWithFunnel(stair3, graphList, 1, 0.05, )
+    path_from_stair4_to_exit, path_4_status = navMeshPathWithFunnel(stair4, graphList, 1, 0.05, )
+    print("stair 3", path_from_stair3_to_exit)
+    print("stair 4", path_from_stair4_to_exit)
+    """
+        END NEW CODE - add 2 stairs
+    """
+    
     # create a list to store the routes
     routes = []
     agent_status = []
@@ -226,7 +284,26 @@ def create_custom_sim_route():
 
         # path, distance = dijkstra(wallPoints, start, goal, step)
         # path = compute_path_in_skeleton_map(start, goal, step)
-        path, status = navMeshPathWithFunnel(start, graphList, floor, path_from_stair1_to_exit,  path_from_stair2_to_exit, step,)
+        
+        """
+            START NEW CODE - add 2 stairs
+        """
+        path, status = navMeshPathWithFunnel(
+            start, 
+            graphList, 
+            floor, 
+            path_from_stair1_to_exit,  
+            path_from_stair2_to_exit, 
+            
+            path_from_stair3_to_exit, # Added
+            path_from_stair4_to_exit, # Added
+            
+           
+            step,)
+        """
+            END NEW CODE - add 2 stairs
+        """
+        
         # path = navMeshPathWithFunnel(start, graphList, floor, step,)
         agent_status.append(status)
         # for p in path:

@@ -1,5 +1,6 @@
-import { addFire , addEvacuee} from "../map/mapGraphics.js";
+import { addFire , addEvacuee, addCollapse} from "../map/mapGraphics.js";
 import { closeMenu } from "../map/mapInteraction.js";
+import { showDimension, showAssemblyPoint , showStairCase, toggleLayer} from "../map/mapLegend.js";
 window.lastClickedPoint = null;
 const days = JSON.parse(sessionStorage.getItem("days") || "[]");
 const sessions = JSON.parse(sessionStorage.getItem("sessions") || "[]");
@@ -19,7 +20,9 @@ const hazardsAdded = [];
 
 document.addEventListener("DOMContentLoaded", function () {
 
-   
+    showDimension(); 
+    showAssemblyPoint();
+    showStairCase();
     // evacuee count
     const evacueeCountInput = document.getElementById("evacueeCountInput");
     
@@ -74,6 +77,50 @@ document.addEventListener("DOMContentLoaded", function () {
         closeMenu();
       });
       
+    }
+
+    console.log("showDimension called");
+    // Checkbox for Dimensions
+    const checkDim = document.getElementById("checkDimension");
+    if (checkDim) {
+        checkDim.addEventListener("change", function () {
+            toggleLayer('dimension', this.checked);
+        });
+    }
+
+    // Checkbox for Assembly Points
+    const checkAsm = document.getElementById("checkAssembly");
+    if (checkAsm) {
+        checkAsm.addEventListener("change", function () {
+          console.log("checkAssembly called");
+            toggleLayer('assembly', this.checked);
+        });
+    }
+
+    const checkStairs = document.getElementById("checkStaircase");
+    if (checkStairs) {
+        checkStairs.addEventListener("change", function () {
+            // This matches the 'staircase' string in your if/else logic above
+            toggleLayer('staircase', this.checked);
+        });
+    }
+    // Add building collapse
+    
+    const addCollapseBtn = document.getElementById("addCollapseBtn");
+    if (addCollapseBtn) {
+      console.log("addFireBtn found ");
+      addCollapseBtn.addEventListener("click", function () {
+        console.log("addFireBtn clicked");
+        const { longitude, latitude, z } = window.lastClickedPoint;
+
+        // add fire in the map
+        addCollapse(longitude, latitude, z);
+
+        // add fire in the list
+        hazardsAdded.push({hazard_type: "building_collapse",longitude, latitude, z });
+
+        closeMenu();
+      });
     }
 
     // Add Fire button
@@ -131,6 +178,32 @@ document.addEventListener("DOMContentLoaded", function () {
     })
   };
 
+  let toastTimeout;
+
+function showToast(message = "❌ Invalid input. Please try again.") {
+  const toast = document.getElementById("toast");
+  const toastMessage = document.getElementById("toast-message");
+  const closeButton = document.getElementById("toast-close");
+
+  closeButton.addEventListener("click", hideToast);
+  toastMessage.textContent = message;
+
+  toast.classList.add("show");
+
+  // Clear previous timeout if any
+  clearTimeout(toastTimeout);
+
+  // Auto hide after 3 seconds
+  toastTimeout = setTimeout(hideToast, 3000);
+}
+
+function hideToast() {
+  const toast = document.getElementById("toast");
+  toast.classList.remove("show");
+}
+
+  
+
 document.getElementById('signInButton').addEventListener('click', function() {
    window.location.href = 'http://localhost:5501/Code/frontend/html/login.html';
 });
@@ -148,10 +221,22 @@ const input = document.getElementById("customNameInput");
 document.getElementById("customSimButton").addEventListener("click", function () {
     const simulationName = input.value.trim();
 
+    if(evacuuesAdded.length === 0) {
+        showToast("Please add at least one evacuee");
+        return;
+    }
+
+    if (hazardsAdded.length === 0) {
+       showToast("Please add at least one hazard");
+        return;
+      
+    }
+
     if (!simulationName) {
         input.classList.add("error");
         input.value = "";
         input.placeholder = "Simulation name is required";
+        showToast("Simulation name is required");
         return;
     }
 
@@ -195,6 +280,14 @@ document.getElementById('sessionSelectButton').addEventListener('click', functio
 });
 
 document.getElementById('sessionSimButton').addEventListener('click', function() {
+  if(!isSessionSimulation) {
+    showToast("Please select at least one session");
+    return;
+  }
+  if(hazardsAdded.length === 0) {
+    showToast("Please add at least one hazard");
+    return;
+  }
   const sessionNameInput = document.getElementById('sessionNameInput');
   const sessionSimData = {
     simulationName: sessionNameInput.value,
@@ -211,6 +304,7 @@ document.getElementById('sessionSimButton').addEventListener('click', function()
     sessionNameInput.classList.add("error");
     sessionNameInput.value = "";
     sessionNameInput.placeholder = "Simulation name is required";
+      showToast("Simulation name is required");
       return;
   }
 
@@ -241,29 +335,33 @@ document.getElementById('sessionSimButton').addEventListener('click', function()
     });
 });
 
-document.getElementById('addConfigButton').addEventListener('click', function(event) {
-  const configuration = {
-    evacuees: evacuuesAdded,
-    days: days,
-    sessions: sessions,
-  };
+// document.getElementById('addConfigButton').addEventListener('click', function(event) {
+//   const configuration = {
+//     evacuees: evacuuesAdded,
+//     days: days,
+//     sessions: sessions,
+//   };
 
-  fetch('http://localhost:5000/create_config', {
-    credentials: 'include', // Important: sends cookies (session)
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(configuration),
-  })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      // console.log(data.config_id);
-      // const configId = data.config_id;
-      // window.location.href = "http://localhost:5501/Code/frontend/html/simulationPlaying.html?configId=" + configId;
-    })
-    .catch((error) => {
-      console.error('Error:', error);
-    });
-});
+//   fetch('http://localhost:5000/create_config', {
+//     credentials: 'include', // Important: sends cookies (session)
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//     },
+//     body: JSON.stringify(configuration),
+//   })
+//     .then(response => response.json())
+//     .then(data => {
+//       console.log(data);
+//       // console.log(data.config_id);
+//       // const configId = data.config_id;
+//       // window.location.href = "http://localhost:5501/Code/frontend/html/simulationPlaying.html?configId=" + configId;
+//     })
+//     .catch((error) => {
+//       console.error('Error:', error);
+//     });
+// });
+
+// call the show dimension function
+console.log("showDimension called");
+showDimension();

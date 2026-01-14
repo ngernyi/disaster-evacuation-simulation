@@ -23,6 +23,30 @@ export function addFire(lon, lat, z) {
     return fireGraphic;
 }
 
+
+
+export function addCollapse(lon, lat, z) {
+  console.log("from graphic file",lon, lat);
+  const fireGraphic = new Graphic({
+      geometry: { type: "point", longitude: lon, latitude: lat, z, spatialReference: { wkid: 4326 } },
+      symbol: {
+      type: "point-3d",
+      symbolLayers: [
+        { 
+          type: "object", 
+          resource: { href: "../assets/models/flame__test.glb" }, 
+          material: { color: "orange" }, 
+          height: 3, 
+          width: 3, 
+          depth: 3, 
+          anchor: "bottom" }]
+      }
+  });
+  window.mapView.graphics.add(fireGraphic);
+
+  return fireGraphic;
+}
+
 // function to add evacuee symbol to the map
 export function addEvacuee(lon, lat, z) {
   const evacueeGraphic = new Graphic({

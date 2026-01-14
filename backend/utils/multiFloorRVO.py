@@ -452,15 +452,20 @@ def runMultiFloorRVO(agent_paths, agent_status, graphList,
                         s.set_agent_position(agent_ids[i], (1e9, 1e9))
                         agent_sims[i] = None
                         agent_ids[i] = None
+
                 # if the agent has completed the path
                 elif get_status_by_step(i, path_progress[i]) == -1:
                     reached_goal[i] = True
-                    s = agent_sims[i]
-                    s.set_agent_pref_velocity(agent_ids[i], (0, 0))
-                    s.set_agent_radius(agent_ids[i], 0.0)
-                    s.set_agent_position(agent_ids[i], (1e9, 1e9))
-                    agent_sims[i] = None
-                    agent_ids[i] = None
+                    ### FIXED BLOCK START ###
+                    if agent_sims[i] is not None and agent_ids[i] is not None:
+                        s = agent_sims[i]
+                        s.set_agent_pref_velocity(agent_ids[i], (0, 0))
+                        s.set_agent_radius(agent_ids[i], 0.0)
+                        s.set_agent_position(agent_ids[i], (1e9, 1e9))
+                        agent_sims[i] = None
+                        agent_ids[i] = None
+                    ### FIXED BLOCK END ###
+
                 # if the agent is reaching a floor
                 else:
                     in_stair[i] = False

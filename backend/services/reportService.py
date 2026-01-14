@@ -10,6 +10,7 @@ import io
 import tempfile
 import os
 import csv
+import numpy as np
 from datetime import datetime
 from services.simulationService import *
 
@@ -34,7 +35,7 @@ def export_csv(simulation_id):
                 len(get_evacuees_route(e.get('Evacuee_Id'))['route']) if get_evacuees_route(e.get('Evacuee_Id')) else 0
                 for e in get_simulation_evacuees(sim['Simulation_Id'])
             ]
-            sim['Duration_sec'] = max(evacuees_routes, default=0) / 50
+            sim['Duration_sec'] = max(evacuees_routes, default=0) / 2.5
 
         # Find highest-risk simulation
         highest_risk_sim = max(batch_simulations, key=lambda x: x['Duration_sec'], default=None)
@@ -59,7 +60,7 @@ def export_csv(simulation_id):
             len(get_evacuees_route(e.get('Evacuee_Id'))['route']) if get_evacuees_route(e.get('Evacuee_Id')) else 0
             for e in evacuees
         ]
-        duration = max(evacuees_routes, default=0) / 50
+        duration = max(evacuees_routes, default=0) / 2.5
         data.append({
             'Simulation Name': simulation_data.get('Simulation_Name'),
             'Created At': simulation_data.get('Created_At'),
@@ -150,7 +151,7 @@ def export_pdf(simulation_id):
     summary_data = [
         ['Simulation Name:', simulation_data.get('Simulation_Name')],
         ['Created At:', simulation_data.get('Created_At')],
-        ['Duration(s):', duration/50],
+        ['Duration(s):', duration/2.5],
         ['Computational Time (s):', simulation_data.get('Computational_Time')],
         ['Evacuees:', len(evacuees)],
         ['Hazards:', len(hazards)],
@@ -201,7 +202,7 @@ def export_pdf(simulation_id):
                     max_steps = max(max_steps, len(route['route']))
 
             # Convert steps → seconds
-            duration_seconds = max_steps / 50
+            duration_seconds = max_steps / 2.5
 
             # Format computational time
             comp_time = round(sim['Computational_Time'], 5)
@@ -265,7 +266,7 @@ def export_pdf(simulation_id):
     buffer.seek(0)
     return buffer
 
-def generate_evacuee_chart(evacuees_routes, steps_per_second=50):
+def generate_evacuee_chart(evacuees_routes, steps_per_second=2.5):
     if not evacuees_routes:
         return None
 
@@ -286,13 +287,14 @@ def generate_evacuee_chart(evacuees_routes, steps_per_second=50):
     time_seconds = []
     escaped_sampled = []
 
-    # Sample every full second
-    for step in range(0, max_step + 1, steps_per_second):
+    # Sample every fractional second using numpy.arange
+    for step in np.arange(0, max_step + 1, steps_per_second):
+        idx = int(step)  # convert float step to nearest index
         time_seconds.append(step / steps_per_second)
-        escaped_sampled.append(evacuees_escaped[step])
+        escaped_sampled.append(evacuees_escaped[idx])
 
-    # ✅ Ensure final partial second is included
-    if max_step % steps_per_second != 0:
+    # Ensure final step is included
+    if max_step not in [int(s) for s in np.arange(0, max_step + 1, steps_per_second)]:
         time_seconds.append(max_step / steps_per_second)
         escaped_sampled.append(evacuees_escaped[-1])
 

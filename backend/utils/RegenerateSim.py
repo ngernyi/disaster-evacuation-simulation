@@ -63,13 +63,62 @@ def regenerate_simulation(simulation_id, current_step, hazard_type, hazard_posit
     # pre calculate the path from stair to the exit
     stair1 = -117.19603379555, 34.05624942388
     stair2 = -117.195333804329, 34.055954726546
+     
+    """
+        START NEW CODE - add 2 stairs
+    """
+    stair3 = -117.19557424707945, 34.056118766847334
+    stair4 = -117.19578962444298, 34.0560899781941
+    """
+        END NEW CODE - add 2 stairs
+    """
     
-    path_from_stair1_to_exit, path_1_status = navMeshPathWithFunnel(stair1, graphList, 1, 0.05, )
-    path_from_stair2_to_exit, path_2_status = navMeshPathWithFunnel(stair2, graphList, 1, 0.05, )
-    print("first and last step of path 1", path_from_stair1_to_exit[0], path_from_stair1_to_exit[-1])
-    print("first and last step of path 2", path_from_stair2_to_exit[0], path_from_stair2_to_exit[-1])
-    print("stair 1", path_from_stair1_to_exit)
-    print("stair 2", path_from_stair2_to_exit)
+    ### NEW CODE START: Safety Check Function ###
+    def is_stair_safe(stair_coords, hazards_list):
+        s_lon, s_lat = stair_coords
+        for h in hazards_list:
+            h_lon = h.get('longitude')
+            h_lat = h.get('latitude')
+            # 0.0001 degrees is roughly 10 meters. 
+            # If a hazard is within this range of the stair, consider it blocked.
+            if abs(s_lon - h_lon) < 0.0001 and abs(s_lat - h_lat) < 0.0001:
+                return False
+        return True
+    ### NEW CODE END ###
+
+    # Initialize paths as None (Blocked by default)
+    path_from_stair1_to_exit = None
+    path_from_stair2_to_exit = None
+    path_from_stair3_to_exit = None
+    path_from_stair4_to_exit = None
+
+    # Only calculate path if the stair is SAFE
+    if is_stair_safe(stair1, hazards_list):
+        path_from_stair1_to_exit, _ = navMeshPathWithFunnel(stair1, graphList, 1, 0.05)
+    else:
+        print("⚠️ Stair 1 is blocked by a hazard! Path disabled.")
+
+    if is_stair_safe(stair2, hazards_list):
+        path_from_stair2_to_exit, _ = navMeshPathWithFunnel(stair2, graphList, 1, 0.05)
+    else:
+        print("⚠️ Stair 2 is blocked by a hazard! Path disabled.")
+
+    if is_stair_safe(stair3, hazards_list):
+        path_from_stair3_to_exit, _ = navMeshPathWithFunnel(stair3, graphList, 1, 0.05)
+    else:
+        print("⚠️ Stair 3 is blocked by a hazard! Path disabled.")
+        
+    if is_stair_safe(stair4, hazards_list):
+        path_from_stair4_to_exit, _ = navMeshPathWithFunnel(stair4, graphList, 1, 0.05)
+    else:
+        print("⚠️ Stair 4 is blocked by a hazard! Path disabled.")
+    
+    # path_from_stair1_to_exit, path_1_status = navMeshPathWithFunnel(stair1, graphList, 1, 0.05, )
+    # path_from_stair2_to_exit, path_2_status = navMeshPathWithFunnel(stair2, graphList, 1, 0.05, )
+    # print("first and last step of path 1", path_from_stair1_to_exit[0], path_from_stair1_to_exit[-1])
+    # print("first and last step of path 2", path_from_stair2_to_exit[0], path_from_stair2_to_exit[-1])
+    # print("stair 1", path_from_stair1_to_exit)
+    # print("stair 2", path_from_stair2_to_exit)
     
      # create a list to store the routes
     routes = []
@@ -89,10 +138,29 @@ def regenerate_simulation(simulation_id, current_step, hazard_type, hazard_posit
         else :
             floor = 3
         
-        path, status = navMeshPathWithFunnel(start, graphList, floor, path_from_stair1_to_exit,  path_from_stair2_to_exit, step,)
-        agent_status.append(status)
+        """
+            START NEW CODE - add 2 stairs
+        """
+        path, status = navMeshPathWithFunnel(
+            start, 
+            graphList, 
+            floor, 
+            path_from_stair1_to_exit,  
+            path_from_stair2_to_exit, 
+            
+            path_from_stair3_to_exit, # Added
+            path_from_stair4_to_exit, # Added
+            
+           
+            step,)
+        """
+            END NEW CODE - add 2 stairs
+        """
        
         routes.append(path)
+        ### NEW CODE START: Add this missing line ###
+        agent_status.append(status)
+        ### NEW CODE END ###
         
     # RVO
     full_routes = runMultiFloorRVO(routes, agent_status, graphList)

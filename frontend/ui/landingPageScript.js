@@ -326,6 +326,8 @@ document.getElementById('sessionSimButton').addEventListener('click', function()
       // console.log(data);
       // console.log(data.simulation_id);
         // const simulationId = data.simulation_id;
+        sessionStorage.removeItem("days");
+        sessionStorage.removeItem("sessions");
         window.location.href = "http://localhost:5501/Code/frontend/html/simulationHistory.html";
 
 

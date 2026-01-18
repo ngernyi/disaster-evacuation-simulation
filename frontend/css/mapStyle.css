@@ -197,7 +197,7 @@ html, body {
     top: 30px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 999;
+    z-index: 9999;
     white-space: nowrap;
     font-size: 0.9em;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);

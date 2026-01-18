@@ -539,6 +539,22 @@ def navMeshPathWithFunnel(start, graphList, floor, path_from_stair1_to_exit=None
     goal_lv2 = [stair1, stair2, stair3, stair4]
     goal_lv3 = [stair1, stair2, stair3, stair4]
     
+    
+    if path_from_stair1_to_exit == None:
+        goal_lv2.remove(stair1)
+        goal_lv3.remove(stair1)
+        
+    if path_from_stair2_to_exit == None:
+        goal_lv2.remove(stair2)
+        goal_lv3.remove(stair2)
+        
+    if path_from_stair3_to_exit == None:
+        goal_lv2.remove(stair3)
+        goal_lv3.remove(stair3)
+        
+    if path_from_stair4_to_exit == None:
+        goal_lv2.remove(stair4)
+        goal_lv3.remove(stair4)
     """
         END NEW CODE - add 2 stairs
     """

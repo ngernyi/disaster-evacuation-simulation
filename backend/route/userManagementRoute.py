@@ -139,6 +139,12 @@ def update_user_details_route():
     if get_user_roles(current_user_id).rstrip()!= "Admin":
         return jsonify({'success': False,'message': 'Not authorized'}), 403
     
+    if request.json.get('newUsername') == '':
+        return jsonify({'success': False,'message': 'The username cannot be empty'}), 400
+    
+    if request.json.get('newEmail') == '':
+        return jsonify({'success': False,'message': 'The email cannot be empty'}), 400
+    
     # get user id from request
     data = request.json
     print("json data",data)

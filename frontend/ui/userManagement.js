@@ -364,9 +364,16 @@ function update_user_details(user_id, newEmail, newUsername) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({ user_id: user_id ,newEmail: newEmail, newUsername: newUsername })
+  }).then(response => {
+    // Check if the server returned an error status (400, 403, 500, etc.)
+    if (!response.ok) {
+        return response.json().then(err => {
+            // Throw the specific message from your Python code: jsonify({'message': '...'})
+            throw new Error(err.message || "Server error occurred");
+        });
+    }
+    return response.json();
   }).then(
-    response => response.json()
-  ).then(
     result => {
       if (result.success) {
         const userIndex = listOfUsers.findIndex(user => user.id === user_id);
@@ -378,7 +385,12 @@ function update_user_details(user_id, newEmail, newUsername) {
         renderUsers();
       }
     }
-  )
+    
+  ).catch(
+    err => {
+      alert(`Failed to update user details: ${err}`);
+    }
+  );
     
 
 }
